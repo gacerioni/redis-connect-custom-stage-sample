@@ -1,58 +1,43 @@
-# Custom Stage Example
+# Custom Stage Demo
 [![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
-Custom Stage pipelining is used to execute the job in form of various stages. The stages can be WriteStage, Acknowledgement Stage, Checkpoint Stage. This module will explain on how to write any custom stage, and it can be added as pipelining process as part of Job configuration.
+Custom Stages in [RedisCDC](https://github.com/RedisLabs-Field-Engineering/RedisCDC) is used when there is a need for custom coding for the purpose of user specific transformations, de-tokenization or any other custom tasks you would want to do before the source data is passed along to the final WRITE stage and persisted in the Redis Enterprise database. RedisCDC is an event driven workflow built using stage driven architecture which create the pipeline for any data flow from a source to Redis Enterprise target. The stages can be built-in stages such as WriteStage and Checkpoint Stage or a Custom Stage. This demo will explain on how to write a very simple custom stage that converts the input source records to an UPPER CASE value and pass it along to the WriteStage.
 
-JobClaimer does the following:
-- Components accessed:  TransportChannel, CheckPointReader, ChangeEventProducer.
-- Fetching Job Config and Starting the pipeline processes.
+# Steps to create a Custom Stage
+### Prerequisite
+```cdc-core``` maven module must be available as a dependency prior to writing the Custom Stage class. Please see the [POM](https://github.com/RedisLabs-Field-Engineering/redis-cdc-custom-stage-demo/blob/master/pom.xml) for an example.
 
-The following is procedure to create any custom stage pipelining processes.
+### Step - 1
 
-# STEP - 1
+Create a [Custom Stage Class](https://github.com/RedisLabs-Field-Engineering/redis-cdc-custom-stage-demo/blob/master/src/main/java/com/redislabs/cdc/customstage/CustomStageDemo.java) which implements the ChangeEventHandler interface.
+
+We must override the following Mandatory and Optional methods in order to write the custom stage.
+<br>```String id()``` **Mandatory**
+<br>```String getJobId()``` **Optional**
+<br>```String getName()``` **Optional**
+<br>```ChangeEventHandler getInstance(HandlerConfig handlerConfig)``` **Mandatory**
+<br>```void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long l, boolean b)``` **Mandatory**
+
+### Step - 2
+
+Copy the Custom Stage Service classpath to [META-INF/services](https://github.com/RedisLabs-Field-Engineering/redis-cdc-custom-stage-demo/blob/master/src/main/resources/META-INF/services/com.ivoyant.cdc.transport.ChangeEventHandler) folder that matches the package name in ChangeEventHandler service configuration.
+<br>The Service Loader will pick the Custom Stage during runtime by ChangeEventHandlerProvider.
+<br> Build the project and place the output jar in the classpath of redis-cdc job e.g.
+<br> Copy the jar directly into the lib folder of the connector OR
+<br> Create an ext folder under the lib folder and add the ext folder to the classpath of startup script.
+
+### Step - 3
 
 Create the custom stage configuration in **JobConfig.yml**
-All configuration related to stages goes under JobConfig.yml
+<br>All configuration related to stages goes under [JobConfig.yml](https://github.com/RedisLabs-Field-Engineering/RedisCDC/tree/master/connectors/mssql#rediscdc-setup-and-job-management-configurations)
 ```yaml
 stages:
-  CustomStageDemo:
-    handlerId: TO_UPPER_CASE
+    CustomStage:
+      handlerId: TO_UPPER_CASE
 ```
+<br> Add this stage to the existing [RedisCDC SQL Server Connector demo's JobConfig.yml](https://github.com/RedisLabs-Field-Engineering/RedisCDC/tree/master/connectors/mssql/demo)
 
-# STEP - 2
-
-The Custom Stage Class must implement ChangeEventHandler interface.
-
-We must override the following methods in order to write the custom stage.
-Followings are optional and required methods are to create a custom stage pipeline process.
-```String id()``` **Mandatory**
-```String getJobId()``` **Optional**
-```String getName()``` **Optional**
-```ChangeEventHandler getInstance(HandlerConfig handlerConfig)``` **Mandatory**
-```void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long l, boolean b)``` **Mandatory**
-
-
-# STEP - 3
-
-Copy the Custom Stage Service classpath to META-INF/services folder
-that matches the package name in ChangeEventHandler service configuration.
-The Service Loader will pick the Custom Stage during runtime by ChangeEventHandlerProvider
-
-# CUSTOM STAGE EXAMPLE - PLUGIN JAR
-
-### PREREQUISITES (Important):
-**NOTE:
-The ```cdc-core``` maven module must be compiled prior to execution of custom stage plugin jar.**
-
-### STEPS:
-
-- Add the following line in ```com.redislabs.cdc.transport.ChangeEventHandler``` file
-```
-com.redislabs.cdc.customstage.CustomStageDemo
-```
-
-
-
+<br> Continue with the job execution in the demo
 
 
 
