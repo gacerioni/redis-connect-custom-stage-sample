@@ -1,5 +1,4 @@
 # Custom Stage Demo
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
 
 Custom Stages in [RedisCDC](https://github.com/RedisLabs-Field-Engineering/RedisCDC) is used when there is a need for custom coding for the purpose of user specific transformations, de-tokenization or any other custom tasks you would want to do before the source data is passed along to the final WRITE stage and persisted in the Redis Enterprise database. RedisCDC is an event driven workflow built using stage driven architecture which create the pipeline for any data flow from a source to Redis Enterprise target. The stages can be built-in stages such as WriteStage and Checkpoint Stage or a Custom Stage. This demo will explain on how to write a very simple custom stage that converts the input source records to an UPPER CASE value and pass it along to the WriteStage.
 
