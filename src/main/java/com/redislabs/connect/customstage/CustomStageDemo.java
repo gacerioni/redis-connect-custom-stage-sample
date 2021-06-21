@@ -1,22 +1,24 @@
-package com.redislabs.cdc.customstage;
+package com.redislabs.connect.customstage;
 
-import com.ivoyant.cdc.CDCConstants;
-import com.ivoyant.cdc.core.config.model.HandlerConfig;
-import com.ivoyant.cdc.core.model.ChangeEvent;
-import com.ivoyant.cdc.model.Operation;
-import com.ivoyant.cdc.transport.ChangeEventHandler;
+import com.redislabs.connect.ConnectConstants;
+import com.redislabs.connect.core.BatchEventProducer;
+import com.redislabs.connect.core.ChangeEventProducer;
+import com.redislabs.connect.core.config.model.HandlerConfig;
+import com.redislabs.connect.core.model.ChangeEvent;
+import com.redislabs.connect.model.Operation;
+import com.redislabs.connect.transport.ChangeEventHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
 /**
  * This is a custom stage Writer that explains END USERS on how to write the code for any custom Stages
- * i.e. not already built with RedisCDC framework.
+ * i.e. not already built with Redis Connect framework.
  * This is an example with the SQL Server connector using a SQL Server Database and emp table model.
  * You can customize the code that suits your use-case.
  * <p>
  * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
- * all the changes coming to RedisCDC framework.
+ * all the changes coming to Redis Connect framework.
  */
 @Slf4j
 public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, HandlerConfig> {
@@ -65,17 +67,25 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
     }
 
     /**
-     * The onEvent Handler is triggered whenever there is change in data (or)
-     * any data is inserted (or) deleted from the Database.
+     * The onEvent Handler is triggered whenever there is change in data i.e.
+     * an Insert, Update or Delete event has occurred on the source Database.
      *
-     * @param changeEvent
-     * @param l
-     * @param b
+     * Called when a publisher has published an event to the {@link ChangeEventProducer}.  The {@link BatchEventProducer} will
+     * read messages from the {@link ChangeEventProducer} in batches, where a batch is all of the events available to be
+     * processed without having to wait for any new event to arrive.  This can be useful for event handlers that need
+     * to do slower operations like I/O as they can group together the data from multiple events into a single
+     * operation.  Implementations should ensure that the operation is always performed when endOfBatch is true as
+     * the time between that message and the next one is indeterminate.
+     *
+     * @param changeEvent      published to the {@link ChangeEventProducer}
+     * @param sequence   of the event being processed
+     * @param endOfBatch flag to indicate if this is the last event in a batch from the {@link ChangeEventProducer}
+     * @throws Exception if the EventHandler would like the exception handled further up the chain.
      */
     @Override
-    public void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long l, boolean b) throws Exception {
-        if (changeEvent.getPayload() != null && changeEvent.getPayload().get(CDCConstants.VALUE) != null) {
-            Operation op = (Operation) changeEvent.getPayload().get(CDCConstants.VALUE);
+    public void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch) throws Exception {
+        if (changeEvent.getPayload() != null && changeEvent.getPayload().get(ConnectConstants.VALUE) != null) {
+            Operation op = (Operation) changeEvent.getPayload().get(ConnectConstants.VALUE);
             log.debug("CustomStageDemo::onEvent Processor : {}, table : {}, operation : {}", getJobId(),
                     op.getTable(), op.getType());
 

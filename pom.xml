@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
-        <artifactId>ivoyant-cdc</artifactId>
-        <groupId>ivoyant-cdc</groupId>
+        <artifactId>redis-connect</artifactId>
+        <groupId>redis-connect</groupId>
         <version>1.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.redislabs.cdc.customstage</groupId>
-    <artifactId>redis-cdc-custom-stage-demo</artifactId>
+    <groupId>com.redislabs.connect.customstage</groupId>
+    <artifactId>redis-connect-custom-stage-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -24,9 +24,9 @@
         <dependency>
             <!-- This jar can be found in the RedisCDC connector lib folder and installed using maven
             install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
-            or imported directly into your custom stage project -->
-            <groupId>ivoyant-cdc</groupId>
-            <artifactId>cdc-core</artifactId>
+            or imported directly into this project -->
+            <groupId>redis-connect</groupId>
+            <artifactId>connect-core</artifactId>
             <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
