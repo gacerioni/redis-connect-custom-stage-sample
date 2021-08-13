@@ -22,7 +22,7 @@
 
     <dependencies>
         <dependency>
-            <!-- This jar can be found in the RedisCDC connector lib folder and installed using maven
+            <!-- This jar can be found in the Redis Connect connector lib folder and installed using maven
             install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
             or imported directly into this project -->
             <groupId>redis-connect</groupId>
