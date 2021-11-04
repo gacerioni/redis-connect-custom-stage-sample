@@ -1,8 +1,6 @@
-package com.redislabs.connect.customstage;
+package com.redis.connect.customstage;
 
 import com.redislabs.connect.ConnectConstants;
-import com.redislabs.connect.core.BatchEventProducer;
-import com.redislabs.connect.core.ChangeEventProducer;
 import com.redislabs.connect.core.config.model.HandlerConfig;
 import com.redislabs.connect.core.model.ChangeEvent;
 import com.redislabs.connect.model.Operation;
@@ -27,9 +25,8 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
     protected String name;
 
     /**
-     *
-     *  TO_UPPER_CASE is the unique string which represents the id of the ChangeEventHandler.
-     *  It should be mapped in the JobConfig.yml as handlerId.
+     * TO_UPPER_CASE is the unique string which represents the id of the ChangeEventHandler.
+     * It should be mapped in the JobConfig.yml as handlerId.
      *
      * @return String
      */
@@ -49,19 +46,18 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
     }
 
     /**
-     *  We create object for customStageDemo based on Singleton Design Pattern just to avoid creating the multiple
-     *  Instances of Custom Stage
+     * We create object for CustomStageDemo based on Singleton Design Pattern just to avoid creating the multiple
+     * Instances of Custom Stage
      *
-     * @param handlerConfig
-     * @return
-     * @throws Exception
+     * @param handlerConfig {@link HandlerConfig}
+     * @return customStageDemo
      */
     @Override
-    public ChangeEventHandler getInstance(HandlerConfig handlerConfig) throws Exception {
+    public ChangeEventHandler<Map<String, Object>, HandlerConfig> getInstance(HandlerConfig handlerConfig) throws Exception {
         CustomStageDemo customStageDemo = new CustomStageDemo();
         customStageDemo.handlerConfig = handlerConfig;
-        customStageDemo.jobId = (String)handlerConfig.getConfigurationDetails().get("jobId");
-        customStageDemo.name = (String)handlerConfig.getConfigurationDetails().get("name");
+        customStageDemo.jobId = (String) handlerConfig.getConfigurationDetails().get("jobId");
+        customStageDemo.name = (String) handlerConfig.getConfigurationDetails().get("name");
 
         return customStageDemo;
     }
@@ -70,16 +66,9 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
      * The onEvent Handler is triggered whenever there is change in data i.e.
      * an Insert, Update or Delete event has occurred on the source Database.
      *
-     * Called when a publisher has published an event to the {@link ChangeEventProducer}.  The {@link BatchEventProducer} will
-     * read messages from the {@link ChangeEventProducer} in batches, where a batch is all of the events available to be
-     * processed without having to wait for any new event to arrive.  This can be useful for event handlers that need
-     * to do slower operations like I/O as they can group together the data from multiple events into a single
-     * operation.  Implementations should ensure that the operation is always performed when endOfBatch is true as
-     * the time between that message and the next one is indeterminate.
-     *
-     * @param changeEvent      published to the {@link ChangeEventProducer}
-     * @param sequence   of the event being processed
-     * @param endOfBatch flag to indicate if this is the last event in a batch from the {@link ChangeEventProducer}
+     * @param changeEvent changeEvent
+     * @param sequence of the event being processed
+     * @param endOfBatch flag to indicate if this is the last event in a batch
      * @throws Exception if the EventHandler would like the exception handled further up the chain.
      */
     @Override
@@ -92,11 +81,11 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
             String fname = op.getCols().getCol("fname").getValue();
             String lname = op.getCols().getCol("lname").getValue();
             // Update the fname value(s) coming from sql server source to upper case
-            if(fname != null) {
+            if (fname != null) {
                 op.getCols().getCol("fname").setValue(fname.toUpperCase());
             }
             // Update the lname value(s) coming from sql server source to upper case
-            if(lname != null) {
+            if (lname != null) {
                 op.getCols().getCol("lname").setValue(lname.toUpperCase());
             }
 

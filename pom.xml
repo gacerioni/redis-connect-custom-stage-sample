@@ -2,15 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-    <parent>
-        <artifactId>redis-connect</artifactId>
-        <groupId>redis-connect</groupId>
-        <version>1.0.2</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.redislabs.connect.customstage</groupId>
+    <groupId>com.redis.connect.customstage</groupId>
     <artifactId>redis-connect-custom-stage-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -22,12 +16,14 @@
 
     <dependencies>
         <dependency>
-            <!-- This jar can be found in the Redis Connect connector lib folder and installed using maven
-            install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
-            or imported directly into this project -->
-            <groupId>redis-connect</groupId>
-            <artifactId>connect-core</artifactId>
-            <version>1.0.2</version>
+            <groupId>com.redis.connect</groupId>
+            <artifactId>redis-connect-core</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
