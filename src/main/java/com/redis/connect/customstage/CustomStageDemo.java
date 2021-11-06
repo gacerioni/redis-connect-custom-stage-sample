@@ -5,7 +5,6 @@ import com.redislabs.connect.core.config.model.HandlerConfig;
 import com.redislabs.connect.core.model.ChangeEvent;
 import com.redislabs.connect.model.Operation;
 import com.redislabs.connect.transport.ChangeEventHandler;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
@@ -18,8 +17,8 @@ import java.util.Map;
  * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
  * all the changes coming to Redis Connect framework.
  */
-@Slf4j
 public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, HandlerConfig> {
+
     protected HandlerConfig handlerConfig;
     protected String jobId;
     protected String name;
@@ -67,16 +66,16 @@ public class CustomStageDemo implements ChangeEventHandler<Map<String, Object>, 
      * an Insert, Update or Delete event has occurred on the source Database.
      *
      * @param changeEvent changeEvent
-     * @param sequence of the event being processed
-     * @param endOfBatch flag to indicate if this is the last event in a batch
+     * @param sequence    of the event being processed
+     * @param endOfBatch  flag to indicate if this is the last event in a batch
      * @throws Exception if the EventHandler would like the exception handled further up the chain.
      */
     @Override
     public void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch) throws Exception {
         if (changeEvent.getPayload() != null && changeEvent.getPayload().get(ConnectConstants.VALUE) != null) {
             Operation op = (Operation) changeEvent.getPayload().get(ConnectConstants.VALUE);
-            log.debug("CustomStageDemo::onEvent Processor : {}, table : {}, operation : {}", getJobId(),
-                    op.getTable(), op.getType());
+            System.out.println("CustomStageDemo::onEvent Processor, " + "jobId: " + getJobId() +
+                    ", table: " + op.getTable() + ", operationType: " + op.getType());
 
             String fname = op.getCols().getCol("fname").getValue();
             String lname = op.getCols().getCol("lname").getValue();
