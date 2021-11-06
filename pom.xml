@@ -19,7 +19,7 @@
     from the https://github.com/redis-field-engineering/redis-connect-dist/releases
     The jar can be installed using maven install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
     or imported directly into this project. e.g.
-    mvn install:install-file -Dfile=<path_to_the_jar>/redis-connect-core-<version>.<build>.jar -DgroupId=com.redis.connect -DartifactId=redis-connect-core -Dversion=<version> -Dpackaging=jar
+    mvn install:install-file -Dfile=<path_to_the_jar>/redis-connect-core-<version>-shaded.jar -DgroupId=com.redis.connect -DartifactId=redis-connect-core -Dversion=<version> -Dpackaging=jar
     -->
     <dependencies>
         <dependency>
