@@ -8,7 +8,7 @@ Custom Stages in [Redis Connect](https://github.com/redis-field-engineering/redi
 
 ### Step - 1
 
-Create a [Custom Stage Class](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redislabs/connect/customstage/CustomStageDemo.java) which implements the ChangeEventHandler interface.
+Create a [Custom Stage Class](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/CustomStageDemo.java) which implements the ChangeEventHandler interface.
 
 We must override the following Mandatory and Optional methods in order to write the custom stage.
 <br>```String id()``` **Mandatory**
