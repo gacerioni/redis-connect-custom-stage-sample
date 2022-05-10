@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.redis.connect</groupId>
             <artifactId>redis-connect-core</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
         </dependency>
     </dependencies>
 
