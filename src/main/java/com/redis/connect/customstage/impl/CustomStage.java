@@ -1,4 +1,4 @@
-package com.redis.connect.pipeline.event.handler.impl;
+package com.redis.connect.customstage.impl;
 
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;

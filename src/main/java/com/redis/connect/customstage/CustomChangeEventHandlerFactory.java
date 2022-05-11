@@ -1,7 +1,9 @@
-package com.redis.connect.pipeline.event.handler;
+package com.redis.connect.customstage;
 
 import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.pipeline.event.handler.impl.CustomStage;
+import com.redis.connect.customstage.impl.CustomStage;
+import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
+import com.redis.connect.pipeline.event.handler.ChangeEventHandlerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
