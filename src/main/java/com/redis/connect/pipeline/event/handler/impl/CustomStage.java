@@ -65,7 +65,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: {} " + e);
+            System.err.println("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
         }
     }
 
