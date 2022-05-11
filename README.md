@@ -9,7 +9,7 @@ Custom Stages in [Redis Connect](https://github.com/redis-field-engineering/redi
 
 ### Step - 1
 
-Create a [Custom Stage Class](src/main/java/com/redis/connect/pipeline/event/handler/impl/CustomStage.java) which implements the ChangeEventHandler interface.
+Create a [Custom Stage Class](src/main/java/com/redis/connect/customstage/impl/CustomStage.java) which implements the ChangeEventHandler interface.
 
 We must override the following methods in order to write the custom stage.
 * ```void onEvent(ChangeEvent<Map<String, Object>> changeEvent, long l, boolean b)```
@@ -27,8 +27,8 @@ Create the custom stage configuration in the job payload e.g. **cdc-job.json**
 ```json
 {
   "index": 1,
-  "type": "CUSTOM",
-  "stageName": "TO_UPPER_CASE"
+  "stageName": "TO_UPPER_CASE",
+  "type": "CUSTOM"
 }
 ```
 
