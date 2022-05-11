@@ -2,14 +2,21 @@ package com.redis.connect.pipeline.event.handler.impl;
 
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.dto.JobSourceDTO;
-import com.redis.connect.dto.JobSourceTableColumnDTO;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
 import com.redis.connect.utils.ConnectConstants;
 
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 
+/**
+ * This is a custom stage Writer that explains END USERS on how to write the code for any custom Stages
+ * i.e. not already built with Redis Connect framework. For example, a custom transformation you need
+ * to apply before writing the changes to Redis Enterprise target.
+ * This is an example with the RDBMS's source in the connector demo's with emp table model.
+ * <p>
+ * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
+ * all the changes coming to Redis Connect framework.
+ */
 public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
@@ -17,7 +24,6 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
     protected String jobId;
     protected String jobType;
     protected JobPipelineStageDTO jobPipelineStage;
-    protected JobSourceDTO jobSourceDTO;
 
     public CustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         this.jobId = jobId;
@@ -42,26 +48,22 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
                 String operationType = (String) payload.get(ConnectConstants.CHANGE_EVENT_OPERATION_TYPE);
 
-                JobSourceDTO.Table table = jobSourceDTO.getTables().get(schemaAndTableName);
+                System.out.println("CustomStage::onEvent Processor, " + "jobId: " + jobId + ", schemaAndTableName: " + schemaAndTableName + ", operationType: " + operationType);
 
-                System.out.println("CustomStage::onEvent Processor, " + "jobId: " + jobId + ", table: " + table + ", operationType: " + operationType);
+                if (!values.isEmpty()) {
 
-                if (table != null) {
-                    for (JobSourceTableColumnDTO tableColumn : table.getColumns()) {
+                    String col1 = values.get("fname");
+                    String col2 = values.get("lname");
 
-                        String col1 = String.valueOf(values.get(tableColumn.getSourceColumn()).equalsIgnoreCase((System.getProperty("col1", "fname"))));
-                        String col2 = String.valueOf(values.get(tableColumn.getSourceColumn()).equalsIgnoreCase((System.getProperty("col2", "lname"))));
+                    System.out.println("Original col1 value: " + col1);
+                    System.out.println("Original col2 value: " + col2);
 
-                        System.out.println("Original " + col1 + " : " + col1);
-                        System.out.println("Original " + col2 + " : " + col2);
-
-                        // Update the col1 value(s) coming from the source to upper case
-                        tableColumn.setTargetColumn(col1.toUpperCase());
-                        System.out.println("Updated " + col1 + " : " + tableColumn.getTargetColumn().equals(col1));
-                        // Update the col2 value(s) coming from the source to upper case
-                        tableColumn.setTargetColumn(col1.toUpperCase());
-                        System.out.println("Updated " + col2 + " : " + tableColumn.getTargetColumn().equals(col2));
-                    }
+                    // Update the col1 value(s) coming from the source to upper case
+                    values.put("fname", col1.toUpperCase());
+                    System.out.println("Updated col1 value: " + values.get("fname"));
+                    // Update the col2 value(s) coming from the source to upper case
+                    values.put("lname", col2.toUpperCase());
+                    System.out.println("Updated col2 value: " + values.get("lname"));
                 }
             }
         } catch (Exception e) {
