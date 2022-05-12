@@ -9,10 +9,11 @@ import java.lang.management.ManagementFactory;
 import java.util.Map;
 
 /**
- * This is a custom stage Writer that explains END USERS on how to write the code for any custom Stages
+ * This is an example of writing a custom transformation
  * i.e. not already built with Redis Connect framework. For example, a custom transformation you need
  * to apply before writing the changes to Redis Enterprise target.
- * This is an example with the RDBMS's source in the connector demo's with emp table model.
+ * Pass any 2 columns with STRING data type to convert them to UPPER CASE
+ * e.g. -Dcol1=fname -Dcol2=lname
  * <p>
  * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
  * all the changes coming to Redis Connect framework.
@@ -52,18 +53,23 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
                 if (!values.isEmpty()) {
 
-                    String col1 = values.get("fname");
-                    String col2 = values.get("lname");
+                    String col1Key = System.getProperty("col1", "fname");
+                    String col2Key = System.getProperty("col2", "lname");
+                    String col1Value = values.getOrDefault(System.getProperty("col1", "fname"), "fname");
+                    String col2Value = values.getOrDefault(System.getProperty("col2", "lname"), "lname");
 
-                    System.out.println("Original col1 value: " + col1);
-                    System.out.println("Original col2 value: " + col2);
-
-                    // Update the col1 value(s) coming from the source to upper case
-                    values.put("fname", col1.toUpperCase());
-                    System.out.println("Updated col1 value: " + values.get("fname"));
-                    // Update the col2 value(s) coming from the source to upper case
-                    values.put("lname", col2.toUpperCase());
-                    System.out.println("Updated col2 value: " + values.get("lname"));
+                    // Update the value(s) for col1Value coming from the source to upper case
+                    if (col1Value != null) {
+                        System.out.println("Original " + col1Key + ": " + col1Value);
+                        values.put(System.getProperty("col1", "fname"), col1Value.toUpperCase());
+                        System.out.println("Updated " + col1Key + ": " + values.get(System.getProperty("col1", "fname")));
+                    }
+                    // Update the value(s) for col2Value coming from the source to upper case
+                    if (col2Value != null) {
+                        System.out.println("Original " + col2Key + ": " + col2Value);
+                        values.put(System.getProperty("col2", "lname"), col2Value.toUpperCase());
+                        System.out.println("Updated " + col2Key + ": " + values.get(System.getProperty("col2", "lname")));
+                    }
                 }
             }
         } catch (Exception e) {
