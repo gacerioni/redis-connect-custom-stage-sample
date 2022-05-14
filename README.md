@@ -34,7 +34,7 @@ Create the custom stage configuration in the job payload e.g. **cdc-job.json**
 {
   "index": 1,
   "stageName": "TO_UPPER_CASE",
-  "type": "CUSTOM"
+  "userDefinedType": "CUSTOM"
 }
 ```
 
