@@ -24,11 +24,11 @@ We must instantiate the CustomStage class within the getInstance() method.
 
 ### Step - 3
 
-Build the project and place the output jar into the extlib folder of Redis Connect. See an example
+Build the project and place the output jar into the extlib folder of Redis Connect. See an example [here](https://github.com/redis-field-engineering/redis-connect-dist/tree/main/examples/postgres/demo/extlib)
 
 ### Step - 4
 
-Create the custom stage configuration in the job payload e.g. **cdc-job.json**
+Create the custom stage configuration in the job payload e.g. [cdc-custom-job.json](https://github.com/redis-field-engineering/redis-connect-dist/blob/main/examples/postgres/demo/config/samples/payloads/cdc-custom-job.json)
 <br>For example,
 ```json
 {
@@ -38,4 +38,4 @@ Create the custom stage configuration in the job payload e.g. **cdc-job.json**
 }
 ```
 
-<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](/src/main/java/com/redis/connect/customstage/impl/CustomStage.java) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/CustomStageDemo.java#L75) in Redis has been transformed to UPPER CASE.
+<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L58) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L59) in Redis has been transformed to UPPER CASE.
