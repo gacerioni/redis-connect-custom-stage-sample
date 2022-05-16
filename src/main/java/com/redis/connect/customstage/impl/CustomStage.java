@@ -1,11 +1,16 @@
 package com.redis.connect.customstage.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
 import com.redis.connect.utils.ConnectConstants;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -25,6 +30,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
     protected String jobId;
     protected String jobType;
     protected JobPipelineStageDTO jobPipelineStage;
+    ObjectMapper objectMapper = new ObjectMapper();
 
     public CustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         this.jobId = jobId;
@@ -55,8 +61,10 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
                     String col1Key = System.getProperty("col1", "fname");
                     String col2Key = System.getProperty("col2", "lname");
+                    String col3Key = System.getProperty("col3", "hiredate");
                     String col1Value = values.getOrDefault(System.getProperty("col1", "fname"), "fname");
                     String col2Value = values.getOrDefault(System.getProperty("col2", "lname"), "lname");
+                    String col3Value = values.getOrDefault(System.getProperty("col3", "hiredate"), "hiredate");
 
                     // Update the value(s) for col1Value coming from the source to upper case
                     if (col1Value != null) {
@@ -69,6 +77,35 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                         System.out.println("Original " + col2Key + ": " + col2Value);
                         values.put(System.getProperty("col2", "lname"), col2Value.toUpperCase());
                         System.out.println("Updated " + col2Key + ": " + values.get(System.getProperty("col2", "lname")));
+                    }
+                    if (col3Value.isBlank() && col3Value.isEmpty()) {
+                        System.out.println("Original " + col3Key + ": " + col3Value);
+
+                        URL url = new URL("http://worldtimeapi.org/api/ip");
+                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        conn.setRequestMethod("GET");
+                        conn.setRequestProperty("Accept", "application/json");
+
+                        if (conn.getResponseCode() != 200) {
+                            throw new RuntimeException("Failed : HTTP error code : "
+                                    + conn.getResponseCode());
+                        }
+
+                        BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+
+                        String output;
+                        String unixtime = "";
+                        System.out.println("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                        while ((output = br.readLine()) != null) {
+                            Map<String, Object> value = objectMapper.readValue(output, Map.class);
+                            if (!value.isEmpty() && value.containsKey("unixtime"))
+                                unixtime = Integer.toString((Integer) value.get("unixtime"));
+                        }
+                        values.put(System.getProperty("col3", "hiredate"), unixtime);
+                        System.out.println("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
+
+                        conn.disconnect();
+
                     }
                 }
             }
