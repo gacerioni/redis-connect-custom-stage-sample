@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!--
+    <!-- Required dependency
     This jar can be found in the Redis Connect connector lib folder or you can download it
     from the https://github.com/redis-field-engineering/redis-connect-dist/releases
     The jar can be installed using maven install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
@@ -28,6 +28,7 @@
             <artifactId>redis-connect-core</artifactId>
             <version>0.9.0</version>
         </dependency>
+        <!-- Optional use case specific dependency -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
