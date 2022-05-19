@@ -5,6 +5,8 @@ import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
 import com.redis.connect.utils.ConnectConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
+    private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
 
     protected String jobId;
     protected String jobType;
@@ -40,12 +43,14 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch) throws Exception {
-        System.out.println("-------------------------------------------Stage: CUSTOM Sequence: " + sequence);
+        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM Sequence: {}", instanceId, sequence);
 
         try {
 
             if (!changeEvent.isValid())
-                System.out.println("Instance: " + instanceId + " received an invalid transition event payload for JobId: " + jobId);
+                LOGGER.warn("Instance: {} received an invalid transition event payload for JobId: {}", instanceId, jobId);
+
+            LOGGER.debug("Instance: {} Payload: {}", instanceId, changeEvent.getPayloads());
 
             for (Map<String, Object> payload : changeEvent.getPayloads()) {
 
@@ -55,7 +60,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
                 String operationType = (String) payload.get(ConnectConstants.CHANGE_EVENT_OPERATION_TYPE);
 
-                System.out.println("CustomStage::onEvent Processor, " + "jobId: " + jobId + ", schemaAndTableName: " + schemaAndTableName + ", operationType: " + operationType);
+                LOGGER.info("Instance: {} CustomStage::onEvent Processor, jobId: {}, schemaAndTableName: {}, operationType: {}", instanceId, jobId, schemaAndTableName, operationType);
 
                 if (!values.isEmpty()) {
 
@@ -66,20 +71,21 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                     String col2Value = values.getOrDefault(System.getProperty("col2", "lname"), "lname");
                     String col3Value = values.getOrDefault(System.getProperty("col3", "hiredate"), "hiredate");
 
-                    // Update the value(s) for col1Value coming from the source to upper case
+                    // Update value(s) for col1Value coming from the source to upper case
                     if (col1Value != null) {
-                        System.out.println("Original " + col1Key + ": " + col1Value);
+                        LOGGER.debug("Original " + col1Key + ": " + col1Value);
                         values.put(System.getProperty("col1", "fname"), col1Value.toUpperCase());
-                        System.out.println("Updated " + col1Key + ": " + values.get(System.getProperty("col1", "fname")));
+                        LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getProperty("col1", "fname")));
                     }
-                    // Update the value(s) for col2Value coming from the source to upper case
+                    // Update value(s) for col2Value coming from the source to upper case
                     if (col2Value != null) {
-                        System.out.println("Original " + col2Key + ": " + col2Value);
+                        LOGGER.debug("Original " + col2Key + ": " + col2Value);
                         values.put(System.getProperty("col2", "lname"), col2Value.toUpperCase());
-                        System.out.println("Updated " + col2Key + ": " + values.get(System.getProperty("col2", "lname")));
+                        LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getProperty("col2", "lname")));
                     }
+                    // Add col3Value from service call if it's null at the source
                     if (col3Value.isBlank() && col3Value.isEmpty()) {
-                        System.out.println("Original " + col3Key + ": " + col3Value);
+                        LOGGER.debug("Original " + col3Key + ": " + col3Value);
 
                         URL url = new URL("http://worldtimeapi.org/api/ip");
                         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -95,14 +101,14 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
 
                         String output;
                         String unixtime = "";
-                        System.out.println("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                        LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
                         while ((output = br.readLine()) != null) {
                             Map<String, Object> value = objectMapper.readValue(output, Map.class);
                             if (!value.isEmpty() && value.containsKey("unixtime"))
                                 unixtime = Integer.toString((Integer) value.get("unixtime"));
                         }
                         values.put(System.getProperty("col3", "hiredate"), unixtime);
-                        System.out.println("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
+                        LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
 
                         conn.disconnect();
 
@@ -110,7 +116,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
+            LOGGER.error("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
         }
     }
 
