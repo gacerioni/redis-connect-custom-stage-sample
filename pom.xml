@@ -17,8 +17,7 @@
 
     <dependencies>
         <!-- Required dependency
-        This jar can be found in the Redis Connect connector lib folder, or you can download it
-        from the https://github.com/redis-field-engineering/redis-connect-dist/releases
+        This jar can be can download from https://github.com/redis-field-engineering/redis-connect-dist/releases
         The jar can be installed using maven install-file goal on the command line, http://maven.apache.org/general.html#importing-jars
         or imported directly into this project. e.g.
         mvn install:install-file -Dfile=<path_to_the_jar>/redis-connect-core-<version>-shaded.jar -DgroupId=com.redis.connect -DartifactId=redis-connect-core -Dversion=<version> -Dpackaging=jar
