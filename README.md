@@ -59,4 +59,4 @@ Create the custom stage configuration in the job payload e.g. [cdc-custom-job.js
     -e REDISCONNECT_JAVA_OPTIONS="-Xms1g -Xmx2g -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     ```
 
-- Start Custom Stage client code in `DEBUG` mode with same `HOST` and `PORT` then, add a breakpoint. See an example [DEBUG run configuration](.run/DEBUG%20CustomStage.run.xml)
+- Start Custom Stage client code in `DEBUG` mode with same `HOST` and `PORT` then, add a breakpoint. See an example [DEBUG configuration](.run/DEBUG%20CustomStage.run.xml)
