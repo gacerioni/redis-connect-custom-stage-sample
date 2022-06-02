@@ -87,8 +87,11 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                     if (col3Value.isBlank() && col3Value.isEmpty()) {
                         LOGGER.debug("Original " + col3Key + ": " + col3Value);
 
+                        // Create a value object to hold the URL
                         URL url = new URL("http://worldtimeapi.org/api/ip");
+                        // Open a connection(?) on the URL(?) and cast the response(??)
                         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                        // Now it's "open", we can set the request method, headers etc.
                         conn.setRequestMethod("GET");
                         conn.setRequestProperty("Accept", "application/json");
 
@@ -102,6 +105,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                         String output;
                         String unixtime = "";
                         LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                        // Manually converting the response body InputStream to Map using Jackson
                         while ((output = br.readLine()) != null) {
                             Map<String, Object> value = objectMapper.readValue(output, Map.class);
                             if (!value.isEmpty() && value.containsKey("unixtime"))
@@ -109,9 +113,6 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                         }
                         values.put(System.getProperty("col3", "hiredate"), unixtime);
                         LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
-
-                        conn.disconnect();
-
                     }
                 }
             }
