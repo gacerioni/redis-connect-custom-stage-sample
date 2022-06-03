@@ -38,7 +38,7 @@ Create the custom stage configuration in the job payload e.g. [cdc-custom-job.js
 }
 ```
 
-<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L73) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L74) in Redis has been transformed to UPPER CASE values.
+<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L74) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/CustomStage.java#L75) in Redis has been transformed to UPPER CASE values.
 
 ## Troubleshooting using [Java Debug Wire Protocol (JDWP)](https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/introclientissues005.html)
 

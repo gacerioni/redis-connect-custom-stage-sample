@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -98,13 +99,15 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                         urlConnection.setRequestMethod("GET");
                         urlConnection.setRequestProperty("Accept", "application/json");
 
+                        Reader streamReader;
+
                         if (urlConnection.getResponseCode() != 200) {
-                            throw new RuntimeException("Failed : HTTP error code : "
-                                    + urlConnection.getResponseCode());
+                            streamReader = new InputStreamReader(urlConnection.getErrorStream());
+                        } else {
+                            streamReader = new InputStreamReader(urlConnection.getInputStream());
                         }
 
-                        BufferedReader br = new BufferedReader(new InputStreamReader((urlConnection.getInputStream())));
-
+                        BufferedReader br = new BufferedReader(streamReader);
                         String output;
                         String unixtime = "";
                         LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
@@ -116,6 +119,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                         }
                         values.put(System.getProperty("col3", "hiredate"), unixtime);
                         LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
+                        br.close();
                     }
                 }
             }
@@ -126,12 +130,13 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
     @Override
     public void onStart() {
-        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) for JobId: {}", instanceId, jobId);
+        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in CustomStage for JobId: {}", instanceId, jobId);
     }
 
     @Override
     public void onShutdown() {
-        urlConnection.disconnect();
-        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) for JobId: {}", instanceId, jobId);
+        if (urlConnection != null)
+            urlConnection.disconnect();
+        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in CustomStage for JobId: {}", instanceId, jobId);
     }
 }
