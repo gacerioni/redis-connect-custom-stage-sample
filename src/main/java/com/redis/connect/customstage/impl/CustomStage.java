@@ -1,5 +1,6 @@
 package com.redis.connect.customstage.impl;
 
+import com.lmax.disruptor.LifecycleAware;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
@@ -25,7 +26,7 @@ import java.util.Map;
  * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
  * all the changes coming to Redis Connect framework.
  */
-public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
+public class CustomStage implements ChangeEventHandler<Map<String, Object>>, LifecycleAware {
 
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
@@ -33,6 +34,8 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
     protected String jobId;
     protected String jobType;
     protected JobPipelineStageDTO jobPipelineStage;
+
+    private HttpURLConnection urlConnection;
     ObjectMapper objectMapper = new ObjectMapper();
 
     public CustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
@@ -87,20 +90,16 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
                     if (col3Value.isBlank() && col3Value.isEmpty()) {
                         LOGGER.debug("Original " + col3Key + ": " + col3Value);
 
-                        // Create a value object to hold the URL
-                        URL url = new URL("http://worldtimeapi.org/api/ip");
-                        // Open a connection(?) on the URL(?) and cast the response(??)
-                        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                         // Now it's "open", we can set the request method, headers etc.
-                        conn.setRequestMethod("GET");
-                        conn.setRequestProperty("Accept", "application/json");
+                        urlConnection.setRequestMethod("GET");
+                        urlConnection.setRequestProperty("Accept", "application/json");
 
-                        if (conn.getResponseCode() != 200) {
+                        if (urlConnection.getResponseCode() != 200) {
                             throw new RuntimeException("Failed : HTTP error code : "
-                                    + conn.getResponseCode());
+                                    + urlConnection.getResponseCode());
                         }
 
-                        BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+                        BufferedReader br = new BufferedReader(new InputStreamReader((urlConnection.getInputStream())));
 
                         String output;
                         String unixtime = "";
@@ -121,4 +120,24 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>> {
         }
     }
 
+    @Override
+    public void onStart() {
+        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) for JobId: {}", instanceId, jobId);
+
+        try {
+            // Create a value object to hold the URL
+            URL url = new URL("http://worldtimeapi.org/api/ip");
+            // Open a connection(?) on the URL(?) and cast the response(??)
+            urlConnection = (HttpURLConnection) url.openConnection();
+        } catch (Exception e) {
+            LOGGER.error("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
+        }
+
+    }
+
+    @Override
+    public void onShutdown() {
+        urlConnection.disconnect();
+        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) for JobId: {}", instanceId, jobId);
+    }
 }
