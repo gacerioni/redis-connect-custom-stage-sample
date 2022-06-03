@@ -90,6 +90,10 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                     if (col3Value.isBlank() && col3Value.isEmpty()) {
                         LOGGER.debug("Original " + col3Key + ": " + col3Value);
 
+                        // Create a value object to hold the URL
+                        URL url = new URL("http://worldtimeapi.org/api/ip");
+                        // Open a connection(?) on the URL(?) and cast the response(??)
+                        urlConnection = (HttpURLConnection) url.openConnection();
                         // Now it's "open", we can set the request method, headers etc.
                         urlConnection.setRequestMethod("GET");
                         urlConnection.setRequestProperty("Accept", "application/json");
@@ -123,16 +127,6 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
     @Override
     public void onStart() {
         LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) for JobId: {}", instanceId, jobId);
-
-        try {
-            // Create a value object to hold the URL
-            URL url = new URL("http://worldtimeapi.org/api/ip");
-            // Open a connection(?) on the URL(?) and cast the response(??)
-            urlConnection = (HttpURLConnection) url.openConnection();
-        } catch (Exception e) {
-            LOGGER.error("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
-        }
-
     }
 
     @Override
