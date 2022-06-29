@@ -13,7 +13,7 @@ Create a [CustomStage](src/main/java/com/redis/connect/customstage/impl/CustomSt
 
 We must override the following methods in order to write the custom stage.
 * ```onEvent(ChangeEventDTO<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch)```
-
+* ```setSequenceCallback(Sequence sequence)```
 ### Step - 2
 
 Create a [CustomChangeEventHandlerFactory](src/main/java/com/redis/connect/customstage/CustomChangeEventHandlerFactory.java) class which implements the ChangeEventHandlerFactory interface and copy this custom factory class to [META-INF/services](src/main/resources/META-INF/services/com.redis.connect.pipeline.event.handler.ChangeEventHandlerFactory) folder that matches the package name in ChangeEventHandlerFactory service configuration.

@@ -40,6 +40,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
     private HttpURLConnection urlConnection;
 
+    // The LMAX Disruptor uses Sequences as a means to identify each ChangeEventHandler place in its ring buffer.
     private Sequence sequenceCallback;
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -129,6 +130,8 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                     }
                 }
             }
+            /* For a slow event handler update the Sequence Barrier for this ChangeEventHandler
+            to notify the BatchEventProcessor that the sequence has progressed. */
             sequenceCallback.set(sequence);
             LOGGER.debug("Instance: {} sequenceCallback sequence: {}", instanceId, sequenceCallback.get());
         } catch (Exception e) {
