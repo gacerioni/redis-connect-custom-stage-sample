@@ -1,7 +1,8 @@
 package com.redis.connect.customstage.impl;
 
-import com.lmax.disruptor.LifecycleAware;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lmax.disruptor.LifecycleAware;
+import com.lmax.disruptor.Sequence;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
@@ -16,6 +17,7 @@ import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * This is an example of writing a custom transformation
@@ -37,7 +39,11 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
     protected JobPipelineStageDTO jobPipelineStage;
 
     private HttpURLConnection urlConnection;
+
+    private Sequence sequenceCallback;
     ObjectMapper objectMapper = new ObjectMapper();
+
+    private final int processors = Runtime.getRuntime().availableProcessors();
 
     public CustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         this.jobId = jobId;
@@ -47,7 +53,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch) throws Exception {
-        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM Sequence: {}", instanceId, sequence);
+        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM Sequence: {} End of Batch: {}", instanceId, sequence, endOfBatch);
 
         try {
 
@@ -123,6 +129,8 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                     }
                 }
             }
+            sequenceCallback.set(sequence);
+            LOGGER.debug("Instance: {} sequenceCallback sequence: {}", instanceId, sequenceCallback.get());
         } catch (Exception e) {
             LOGGER.error("Instance: " + instanceId + "MESSAGE: " + e.getMessage() + "STACKTRACE: " + e);
         }
@@ -130,13 +138,31 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
     @Override
     public void onStart() {
-        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in CustomStage for JobId: {}", instanceId, jobId);
+        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in CustomStage for JobId: {} Available CPU: {}", instanceId, jobId, processors);
     }
 
     @Override
     public void onShutdown() {
         if (urlConnection != null)
             urlConnection.disconnect();
-        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in CustomStage for JobId: {}", instanceId, jobId);
+        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in CustomStage for JobId: {} Available CPU: {}", instanceId, jobId, processors);
+    }
+
+    private void sleepRandomly() {
+        try {
+            Thread.sleep(getMillis());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static long getMillis() {
+        return ThreadLocalRandom.current().nextInt(1000, 30000);
+    }
+
+    @Override
+    public void setSequenceCallback(Sequence sequence) {
+        this.sequenceCallback = sequence;
     }
 }
