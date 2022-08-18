@@ -29,7 +29,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * NOTE: Any CustomStage Classes must implement the ChangeEventHandler interface as this is the source of
  * all the changes coming to Redis Connect framework.
  */
-public class CustomStage implements ChangeEventHandler<Map<String, Object>>, LifecycleAware {
+public class ToUpperCase implements ChangeEventHandler<Map<String, Object>>, LifecycleAware {
 
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
@@ -46,7 +46,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
     private final int processors = Runtime.getRuntime().availableProcessors();
 
-    public CustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
+    public ToUpperCase(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         this.jobId = jobId;
         this.jobType = jobType;
         this.jobPipelineStage = jobPipelineStage;
@@ -65,7 +65,7 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
 
             for (Map<String, Object> payload : changeEvent.getPayloads()) {
 
-                String schemaAndTableName = payload.get(ConnectConstants.CHANGE_EVENT_SCHEMA) + "." + payload.get(ConnectConstants.CHANGE_EVENT_TABLE);
+                String schemaAndTableName = String.valueOf(payload.get(ConnectConstants.CHANGE_EVENT_SCHEMA_AND_TABLE));
 
                 Map<String, String> values = (Map<String, String>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES);
 
@@ -128,6 +128,10 @@ public class CustomStage implements ChangeEventHandler<Map<String, Object>>, Lif
                         LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
                         br.close();
                     }
+
+                    // set operation type to force delete based on a condition e.g. a row marked for deletion
+                    //payload.set(ConnectConstants.CHANGE_EVENT_OPERATION_TYPE, ConnectConstants.CHANGE_EVENT_OPERATION_DELETE);
+                    //((Map<String, String>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES)).clear();
                 }
             }
             /* For a slow event handler update the Sequence Barrier for this ChangeEventHandler
