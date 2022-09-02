@@ -19,12 +19,13 @@ public class ClobToJSON implements ChangeEventHandler<Map<String, Object>> {
     private static final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
 
-    private String jobId;
-    private String jobType;
-    private JobPipelineStageDTO jobPipelineStage;
+    private final String jobId;
+    private final String jobType;
+    private final JobPipelineStageDTO jobPipelineStage;
 
     private Sequence sequenceCallback;
-    private String jsonClobColumnName;
+    private final String jsonClobColumnName1;
+    private final String jsonClobColumnName2;
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -32,7 +33,8 @@ public class ClobToJSON implements ChangeEventHandler<Map<String, Object>> {
         this.jobId = jobId;
         this.jobType = jobType;
         this.jobPipelineStage = jobPipelineStage;
-        this.jsonClobColumnName = "TRANS_MSG"; //This can be optionally configured through an ENV variable
+        this.jsonClobColumnName1 = System.getenv("REDISCONNECT_CLOB1");
+        this.jsonClobColumnName2 = System.getenv("REDISCONNECT_CLOB2");
     }
 
     @Override
@@ -52,15 +54,21 @@ public class ClobToJSON implements ChangeEventHandler<Map<String, Object>> {
             if (payload != null) {
 
                 Map<String, Object> values = (Map<String, Object>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES);
-                if (values != null && values.containsKey(jsonClobColumnName)) {
+                if (values != null && values.containsKey(jsonClobColumnName1)) {
 
-                    JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName));
+                    JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName1));
 
-                    jsonNode.fieldNames().forEachRemaining(key -> {
-                        values.put(key, jsonNode.get(key));
-                    });
+                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
 
-                    values.remove(jsonClobColumnName);
+                    values.remove(jsonClobColumnName1);
+                }
+                if (values != null && values.containsKey(jsonClobColumnName2)) {
+
+                    JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName2));
+
+                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
+
+                    values.remove(jsonClobColumnName2);
                 }
             }
         }
