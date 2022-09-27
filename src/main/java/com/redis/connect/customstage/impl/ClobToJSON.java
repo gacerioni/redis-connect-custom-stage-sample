@@ -2,52 +2,36 @@ package com.redis.connect.customstage.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lmax.disruptor.Sequence;
+import java.lang.management.ManagementFactory;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
+import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
 import com.redis.connect.utils.ConnectConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.management.ManagementFactory;
 import java.util.Map;
 
-
-public class ClobToJSON implements ChangeEventHandler<Map<String, Object>> {
+public class ClobToJSON extends BaseCustomStageHandler {
 
     private static final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
-
-    private final String jobId;
-    private final String jobType;
-    private final JobPipelineStageDTO jobPipelineStage;
-
-    private Sequence sequenceCallback;
     private final String jsonClobColumnName1;
     private final String jsonClobColumnName2;
 
     private static final ObjectMapper mapper = new ObjectMapper();
+    private final int processors = Runtime.getRuntime().availableProcessors();
 
     public ClobToJSON(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
-        this.jobId = jobId;
-        this.jobType = jobType;
-        this.jobPipelineStage = jobPipelineStage;
+        super(jobId, jobType, jobPipelineStage);
         this.jsonClobColumnName1 = System.getenv("REDISCONNECT_CLOB1");
         this.jsonClobColumnName2 = System.getenv("REDISCONNECT_CLOB2");
     }
 
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent, long sequence, boolean endOfBatch) throws Exception {
+    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
-        if (!changeEvent.isValid()) {
-            LOGGER.error("Instance: {} JobId: {} received an invalid change event in StageName: {} which will be ignored. " +
-                    "If this does not resolve after a few iterations, manual analysis is recommended", instanceId, jobId, jobPipelineStage.getStageName());
-            return;
-        }
-
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Instance: {} processed event Stage: {} with Sequence: {} EndOfBatch: {} for JobId: {}", instanceId, jobPipelineStage.getStageName(), sequence, endOfBatch, jobId);
+        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+        LOGGER.debug("Instance: {} Payload: {}", instanceId, changeEvent.getPayloads());
 
         for (Map<String, Object> payload : changeEvent.getPayloads()) {
 
@@ -72,14 +56,16 @@ public class ClobToJSON implements ChangeEventHandler<Map<String, Object>> {
                 }
             }
         }
-
-        /* For a slow event handler update the Sequence Barrier for this ChangeEventHandler to notify the BatchEventProcessor that the sequence has progressed. */
-        sequenceCallback.set(sequence);
     }
 
     @Override
-    public void setSequenceCallback(Sequence sequence) {
-        this.sequenceCallback = sequence;
+    public void init() throws Exception {
+        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+    }
+
+    @Override
+    public void shutdown() throws Exception {
+        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
     }
 
 }

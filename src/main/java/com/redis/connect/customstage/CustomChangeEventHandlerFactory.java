@@ -1,13 +1,12 @@
 package com.redis.connect.customstage;
 
+import java.lang.management.ManagementFactory;
 import com.redis.connect.customstage.impl.ClobToJSON;
 import com.redis.connect.customstage.impl.ToUpperCase;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.exception.ValidationException;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandler;
 import com.redis.connect.pipeline.event.handler.ChangeEventHandlerFactory;
-
-import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.Set;
 
