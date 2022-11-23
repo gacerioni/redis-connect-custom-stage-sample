@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.management.ManagementFactory;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
+import com.redis.connect.pipeline.event.handler.BaseCustomStageHandler;
 import com.redis.connect.utils.ConnectConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
