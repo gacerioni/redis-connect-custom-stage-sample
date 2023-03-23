@@ -2,13 +2,14 @@ package com.redis.connect.customstage.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.lang.management.ManagementFactory;
+import com.lmax.disruptor.Sequence;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.pipeline.event.handler.BaseCustomStageHandler;
-import com.redis.connect.utils.ConnectConstants;
+import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.management.ManagementFactory;
 import java.util.Map;
 
 public class ClobToJSON extends BaseCustomStageHandler {
@@ -31,40 +32,38 @@ public class ClobToJSON extends BaseCustomStageHandler {
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
         LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
-        LOGGER.debug("Instance: {} Payload: {}", instanceId, changeEvent.getPayloads());
 
-        for (Map<String, Object> payload : changeEvent.getPayloads()) {
+        if (!changeEvent.getValues().isEmpty()) {
 
-            if (payload != null) {
+            Map<String, Object> values = changeEvent.getValues();
 
-                Map<String, Object> values = (Map<String, Object>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES);
-                if (values != null && values.containsKey(jsonClobColumnName1)) {
+            if (values != null && values.containsKey(jsonClobColumnName1)) {
 
-                    JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName1));
+                JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName1));
 
-                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
+                jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
 
-                    values.remove(jsonClobColumnName1);
-                }
-                if (values != null && values.containsKey(jsonClobColumnName2)) {
+                values.remove(jsonClobColumnName1);
+            }
+            if (values != null && values.containsKey(jsonClobColumnName2)) {
 
-                    JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName2));
+                JsonNode jsonNode = mapper.readTree((String) values.get(jsonClobColumnName2));
 
-                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
+                jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
 
-                    values.remove(jsonClobColumnName2);
-                }
+                values.remove(jsonClobColumnName2);
             }
         }
     }
 
     @Override
-    public void init() throws Exception {
+    public void init() {
+        setSequenceCallback(new Sequence());
         LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
     }
 
     @Override
-    public void shutdown() throws Exception {
+    public void shutdown() {
         LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
     }
 

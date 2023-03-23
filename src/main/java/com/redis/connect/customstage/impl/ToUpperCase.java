@@ -1,18 +1,19 @@
 package com.redis.connect.customstage.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lmax.disruptor.Sequence;
+import com.redis.connect.dto.ChangeEventDTO;
+import com.redis.connect.dto.JobPipelineStageDTO;
+import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import com.redis.connect.dto.ChangeEventDTO;
-import com.redis.connect.dto.JobPipelineStageDTO;
-import com.redis.connect.pipeline.event.handler.BaseCustomStageHandler;
-import com.redis.connect.utils.ConnectConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 
@@ -21,7 +22,9 @@ import java.util.Map;
  * i.e. not already built with Redis Connect framework. For example, a custom transformation you need
  * to apply before writing the changes to Redis Enterprise target.
  * Pass any 2 columns with STRING data type to convert them to UPPER CASE
- * e.g. -Dcol1=fname -Dcol2=lname
+ * e.g. From cli do, export col1=fname and export col2=lname
+ * OR add it to redisconnect.conf as col1=fname and col2=lname
+ * OR with container use -e col1=fname, -e col2=lname
  * <p>
  * NOTE: Any CustomStage Classes must extend the BaseCustomStageHandler class as this is the source of
  * all the changes coming to Redis Connect Custom Stage framework.
@@ -42,83 +45,79 @@ public class ToUpperCase extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
 
         LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
-        LOGGER.debug("Instance: {} Payload: {}", instanceId, changeEvent.getPayloads());
 
-        for (Map<String, Object> payload : changeEvent.getPayloads()) {
+        if (!changeEvent.getValues().isEmpty()) {
 
-            String schemaAndTableName = String.valueOf(payload.get(ConnectConstants.CHANGE_EVENT_SCHEMA_AND_TABLE));
+            Map<String, Object> values = changeEvent.getValues();
 
-            Map<String, String> values = (Map<String, String>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES);
+            String schemaAndTableName = changeEvent.getSchemaAndTableName();
 
-            String operationType = (String) payload.get(ConnectConstants.CHANGE_EVENT_OPERATION_TYPE);
+            String operationType = changeEvent.getOperation();
 
-            LOGGER.info("Instance: {} CustomStage::onEvent Processor, schemaAndTableName: {}, operationType: {}", instanceId, schemaAndTableName, operationType);
+            LOGGER.debug("Instance: {} CustomStage::onEvent Processor, schemaAndTableName: {}, operationType: {}", instanceId, schemaAndTableName, operationType);
 
-            if (!values.isEmpty()) {
+            String col1Key = System.getenv("col1");
+            String col2Key = System.getenv("col2");
+            String col3Key = System.getenv("col3");
+            String col1Value = (String) values.getOrDefault(System.getenv("col1"), "fname");
+            String col2Value = (String) values.getOrDefault(System.getenv("col2"), "lname");
+            String col3Value = (String) values.getOrDefault(System.getenv("col3"), "hiredate");
 
-                String col1Key = System.getProperty("col1", "fname");
-                String col2Key = System.getProperty("col2", "lname");
-                String col3Key = System.getProperty("col3", "hiredate");
-                String col1Value = values.getOrDefault(System.getProperty("col1", "fname"), "fname");
-                String col2Value = values.getOrDefault(System.getProperty("col2", "lname"), "lname");
-                String col3Value = values.getOrDefault(System.getProperty("col3", "hiredate"), "hiredate");
+            // Update value(s) for col1Value coming from the source to upper case
+            if (col1Value != null) {
+                LOGGER.debug("Original " + col1Key + ": " + col1Value);
+                values.put(System.getenv("col1"), col1Value.toUpperCase());
+                LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getenv("col1")));
+            }
+            // Update value(s) for col2Value coming from the source to upper case
+            if (col2Value != null) {
+                LOGGER.debug("Original " + col2Key + ": " + col2Value);
+                values.put(System.getenv("col2"), col2Value.toUpperCase());
+                LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getenv("col2")));
+            }
+            // Add col3Value from service call if it's null at the source
+            if (col3Value.isBlank() && col3Value.isEmpty()) {
+                LOGGER.debug("Original " + col3Key + ": " + col3Value);
 
-                // Update value(s) for col1Value coming from the source to upper case
-                if (col1Value != null) {
-                    LOGGER.debug("Original " + col1Key + ": " + col1Value);
-                    values.put(System.getProperty("col1", "fname"), col1Value.toUpperCase());
-                    LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getProperty("col1", "fname")));
+                // Create a value object to hold the URL
+                URL url = new URL("http://worldtimeapi.org/api/ip");
+                // Open a connection(?) on the URL(?) and cast the response(??)
+                urlConnection = (HttpURLConnection) url.openConnection();
+                // Now it's "open", we can set the request method, headers etc.
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("Accept", "application/json");
+
+                Reader streamReader;
+
+                if (urlConnection.getResponseCode() != 200) {
+                    streamReader = new InputStreamReader(urlConnection.getErrorStream());
+                } else {
+                    streamReader = new InputStreamReader(urlConnection.getInputStream());
                 }
-                // Update value(s) for col2Value coming from the source to upper case
-                if (col2Value != null) {
-                    LOGGER.debug("Original " + col2Key + ": " + col2Value);
-                    values.put(System.getProperty("col2", "lname"), col2Value.toUpperCase());
-                    LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getProperty("col2", "lname")));
+
+                BufferedReader br = new BufferedReader(streamReader);
+                String output;
+                String unixtime = "";
+                LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                // Manually converting the response body InputStream to Map using Jackson
+                while ((output = br.readLine()) != null) {
+                    Map<String, Object> value = objectMapper.readValue(output, Map.class);
+                    if (!value.isEmpty() && value.containsKey("unixtime"))
+                        unixtime = Integer.toString((Integer) value.get("unixtime"));
                 }
-                // Add col3Value from service call if it's null at the source
-                if (col3Value.isBlank() && col3Value.isEmpty()) {
-                    LOGGER.debug("Original " + col3Key + ": " + col3Value);
-
-                    // Create a value object to hold the URL
-                    URL url = new URL("http://worldtimeapi.org/api/ip");
-                    // Open a connection(?) on the URL(?) and cast the response(??)
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    // Now it's "open", we can set the request method, headers etc.
-                    urlConnection.setRequestMethod("GET");
-                    urlConnection.setRequestProperty("Accept", "application/json");
-
-                    Reader streamReader;
-
-                    if (urlConnection.getResponseCode() != 200) {
-                        streamReader = new InputStreamReader(urlConnection.getErrorStream());
-                    } else {
-                        streamReader = new InputStreamReader(urlConnection.getInputStream());
-                    }
-
-                    BufferedReader br = new BufferedReader(streamReader);
-                    String output;
-                    String unixtime = "";
-                    LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
-                    // Manually converting the response body InputStream to Map using Jackson
-                    while ((output = br.readLine()) != null) {
-                        Map<String, Object> value = objectMapper.readValue(output, Map.class);
-                        if (!value.isEmpty() && value.containsKey("unixtime"))
-                            unixtime = Integer.toString((Integer) value.get("unixtime"));
-                    }
-                    values.put(System.getProperty("col3", "hiredate"), unixtime);
-                    LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getProperty("col3", "hiredate")));
-                    br.close();
-                }
+                values.put(System.getenv("col3"), unixtime);
+                LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getenv("col3")));
+                br.close();
             }
         }
-
     }
 
     @Override
     public void init() {
+        setSequenceCallback(new Sequence());
         LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ToUpperCase. Available CPU: {}", instanceId, processors);
     }
 

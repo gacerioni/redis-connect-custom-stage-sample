@@ -12,7 +12,7 @@ Custom Stages in Redis Connect is used when there is a need for custom coding fo
 Create a Custom Stage class e.g. [ToUpperCase](src/main/java/com/redis/connect/customstage/impl/ToUpperCase.java) which extends the BaseCustomStageHandler class.
 
 We must override the following method in order to write the custom stage.
-* ```onEvent(ChangeEventDTO<Map<String, Object>> changeEvent)```
+* ```onEvent(ChangeEventDTO changeEvent)```
 
 ### Step - 2
 

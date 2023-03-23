@@ -5,8 +5,7 @@ import com.lmax.disruptor.Sequence;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.exception.ValidationException;
-import com.redis.connect.pipeline.event.handler.BaseCustomStageHandler;
-import com.redis.connect.utils.ConnectConstants;
+import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
 import io.lettuce.core.RedisConnectionException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -32,30 +31,26 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
 
-        for (Map<String, Object> payload : changeEvent.getPayloads()) {
-            if (payload != null) {
+        if (!changeEvent.getValues().isEmpty()) {
 
-                Map<String, Object> values = (Map<String, Object>) payload.get(ConnectConstants.CHANGE_EVENT_VALUES);
-                if (values != null) {
+            Map<String, Object> values = changeEvent.getValues();
 
-                    if (!values.containsKey(HTTP_HEADERS_KEY))
-                        throw new ValidationException("Could not forward Splunk HTTP Event Collector (HEC) request because HTTP Headers were not provided");
+            if (!values.containsKey(HTTP_HEADERS_KEY))
+                throw new ValidationException("Could not forward Splunk HTTP Event Collector (HEC) request because HTTP Headers were not provided");
 
-                    HttpHeaders httpHeaders = mapper.readValue((String) values.remove(HTTP_HEADERS_KEY), HttpHeaders.class);
-                    HttpEntity<String> entity = new HttpEntity<>(mapper.writeValueAsString(values), httpHeaders);
+            HttpHeaders httpHeaders = mapper.readValue((String) values.remove(HTTP_HEADERS_KEY), HttpHeaders.class);
+            HttpEntity<String> entity = new HttpEntity<>(mapper.writeValueAsString(values), httpHeaders);
 
-                    // Forward HTTP Event Collector Request
-                    ResponseEntity<String> response = new RestTemplate().postForEntity(URI.create(destinationUrl), entity, String.class);
+            // Forward HTTP Event Collector Request
+            ResponseEntity<String> response = new RestTemplate().postForEntity(URI.create(destinationUrl), entity, String.class);
 
-                    if (response == null)
-                        throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " did not receive a response");
+            if (response == null)
+                throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " did not receive a response");
 
-                    else if (!response.getStatusCode().equals(HttpStatus.OK))
-                        throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " received a response with HttpStatusCode: " + response.getStatusCode());
-                }
-            }
+            else if (!response.getStatusCode().equals(HttpStatus.OK))
+                throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " received a response with HttpStatusCode: " + response.getStatusCode());
         }
     }
 
@@ -68,6 +63,7 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
     }
 
     @Override
-    public void shutdown() throws Exception {}
+    public void shutdown() {
+    }
 
 }
