@@ -5,9 +5,6 @@ import com.lmax.disruptor.Sequence;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -15,7 +12,8 @@ import java.lang.management.ManagementFactory;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is an example of writing a custom transformation
@@ -45,19 +43,21 @@ public class ToUpperCase extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
-        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+        }
 
         if (!changeEvent.getValues().isEmpty()) {
 
             Map<String, Object> values = changeEvent.getValues();
-
             String schemaAndTableName = changeEvent.getSchemaAndTableName();
-
             String operationType = changeEvent.getOperation();
 
-            LOGGER.debug("Instance: {} CustomStage::onEvent Processor, schemaAndTableName: {}, operationType: {}", instanceId, schemaAndTableName, operationType);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Instance: {} CustomStage::onEvent Processor, schemaAndTableName: {}, operationType: {}", instanceId, schemaAndTableName, operationType);
+            }
 
             String col1Key = System.getenv("col1");
             String col2Key = System.getenv("col2");
@@ -68,19 +68,29 @@ public class ToUpperCase extends BaseCustomStageHandler {
 
             // Update value(s) for col1Value coming from the source to upper case
             if (col1Value != null) {
-                LOGGER.debug("Original " + col1Key + ": " + col1Value);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Original " + col1Key + ": " + col1Value);
+                }
                 values.put(System.getenv("col1"), col1Value.toUpperCase());
-                LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getenv("col1")));
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getenv("col1")));
+                }
             }
             // Update value(s) for col2Value coming from the source to upper case
             if (col2Value != null) {
-                LOGGER.debug("Original " + col2Key + ": " + col2Value);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Original " + col2Key + ": " + col2Value);
+                }
                 values.put(System.getenv("col2"), col2Value.toUpperCase());
-                LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getenv("col2")));
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getenv("col2")));
+                }
             }
             // Add col3Value from service call if it's null at the source
             if (col3Value.isBlank() && col3Value.isEmpty()) {
-                LOGGER.debug("Original " + col3Key + ": " + col3Value);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Original " + col3Key + ": " + col3Value);
+                }
 
                 // Create a value object to hold the URL
                 URL url = new URL("http://worldtimeapi.org/api/ip");
@@ -101,7 +111,9 @@ public class ToUpperCase extends BaseCustomStageHandler {
                 BufferedReader br = new BufferedReader(streamReader);
                 String output;
                 String unixtime = "";
-                LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
+                }
                 // Manually converting the response body InputStream to Map using Jackson
                 while ((output = br.readLine()) != null) {
                     Map<String, Object> value = objectMapper.readValue(output, Map.class);
@@ -109,22 +121,33 @@ public class ToUpperCase extends BaseCustomStageHandler {
                         unixtime = Integer.toString((Integer) value.get("unixtime"));
                 }
                 values.put(System.getenv("col3"), unixtime);
-                LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getenv("col3")));
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getenv("col3")));
+                }
                 br.close();
             }
         }
     }
 
     @Override
+    public void validateEventHandler() {
+        // Do validations here
+    }
+
+    @Override
     public void init() {
         setSequenceCallback(new Sequence());
-        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ToUpperCase. Available CPU: {}", instanceId, processors);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ToUpperCase. Available CPU: {}", instanceId, processors);
+        }
     }
 
     @Override
     public void shutdown() {
         if (urlConnection != null)
             urlConnection.disconnect();
-        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ToUpperCase. Available CPU: {}", instanceId, processors);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ToUpperCase. Available CPU: {}", instanceId, processors);
+        }
     }
 }

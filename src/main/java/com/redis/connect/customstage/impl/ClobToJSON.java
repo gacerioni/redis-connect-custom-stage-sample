@@ -6,11 +6,10 @@ import com.lmax.disruptor.Sequence;
 import com.redis.connect.dto.ChangeEventDTO;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.management.ManagementFactory;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ClobToJSON extends BaseCustomStageHandler {
 
@@ -31,7 +30,9 @@ public class ClobToJSON extends BaseCustomStageHandler {
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
-        LOGGER.info("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+        }
 
         if (!changeEvent.getValues().isEmpty()) {
 
@@ -59,12 +60,16 @@ public class ClobToJSON extends BaseCustomStageHandler {
     @Override
     public void init() {
         setSequenceCallback(new Sequence());
-        LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+        }
     }
 
     @Override
     public void shutdown() {
-        LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+        }
     }
 
 }
