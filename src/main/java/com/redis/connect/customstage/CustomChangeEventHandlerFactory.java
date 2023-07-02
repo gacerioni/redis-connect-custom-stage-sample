@@ -1,7 +1,7 @@
 package com.redis.connect.customstage;
 
 import java.lang.management.ManagementFactory;
-import com.redis.connect.customstage.impl.ClobToJSON;
+import com.redis.connect.customstage.impl.LobToJSON;
 import com.redis.connect.customstage.impl.SplunkForwardHECRequestCustomStage;
 import com.redis.connect.customstage.impl.ToUpperCase;
 import com.redis.connect.dto.JobPipelineStageDTO;
@@ -16,14 +16,14 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
 
     private static final String TO_UPPER_CASE = "TO_UPPER_CASE";
-    private static final String CLOB_TO_JSON = "CLOB_TO_JSON";
+    private static final String LOB_TO_JSON = "LOB_TO_JSON";
     private static final String FORWARD_HEC_REQUEST = "FORWARD_HEC_REQUEST";
 
     private static final Set<String> supportedChangeEventHandlers = new HashSet<>();
 
     static {
         supportedChangeEventHandlers.add(TO_UPPER_CASE);
-        supportedChangeEventHandlers.add(CLOB_TO_JSON);
+        supportedChangeEventHandlers.add(LOB_TO_JSON);
         supportedChangeEventHandlers.add(FORWARD_HEC_REQUEST);
     }
 
@@ -36,8 +36,8 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
             case TO_UPPER_CASE:
                 changeEventHandler = new ToUpperCase(jobId, jobType, jobPipelineStage);
                 break;
-            case CLOB_TO_JSON:
-                changeEventHandler = new ClobToJSON(jobId, jobType, jobPipelineStage);
+            case LOB_TO_JSON:
+                changeEventHandler = new LobToJSON(jobId, jobType, jobPipelineStage);
                 break;
             case FORWARD_HEC_REQUEST:
                 changeEventHandler = new SplunkForwardHECRequestCustomStage(jobId, jobType, jobPipelineStage);

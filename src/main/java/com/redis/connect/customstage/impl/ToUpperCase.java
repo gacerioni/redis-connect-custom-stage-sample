@@ -116,7 +116,7 @@ public class ToUpperCase extends BaseCustomStageHandler {
                 }
                 // Manually converting the response body InputStream to Map using Jackson
                 while ((output = br.readLine()) != null) {
-                    Map<String, Object> value = objectMapper.readValue(output, Map.class);
+                    Map value = objectMapper.readValue(output, Map.class);
                     if (!value.isEmpty() && value.containsKey("unixtime"))
                         unixtime = Integer.toString((Integer) value.get("unixtime"));
                 }

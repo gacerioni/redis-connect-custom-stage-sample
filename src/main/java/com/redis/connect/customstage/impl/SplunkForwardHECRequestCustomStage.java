@@ -23,7 +23,7 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
     private static final String HTTP_HEADERS_KEY = "httpHeaders";
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private String destinationUrl;
+    private final String destinationUrl;
 
     public SplunkForwardHECRequestCustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         super(jobId, jobType, jobPipelineStage);
@@ -31,7 +31,7 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
         if (!changeEvent.getValues().isEmpty()) {
 
@@ -46,10 +46,7 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
             // Forward HTTP Event Collector Request
             ResponseEntity<String> response = new RestTemplate().postForEntity(URI.create(destinationUrl), entity, String.class);
 
-            if (response == null)
-                throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " did not receive a response");
-
-            else if (!response.getStatusCode().equals(HttpStatus.OK))
+            if (!response.getStatusCode().equals(HttpStatus.OK))
                 throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " received a response with HttpStatusCode: " + response.getStatusCode());
         }
     }
