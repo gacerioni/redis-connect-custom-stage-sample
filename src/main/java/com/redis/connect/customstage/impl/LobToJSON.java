@@ -82,14 +82,14 @@ public class LobToJSON extends BaseCustomStageHandler {
     public void init() {
         setSequenceCallback(new Sequence());
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+            LOGGER.debug("Instance: {} successfully started disruptor (replication pipeline) in LobToJSON. Available CPU: {}", instanceId, processors);
         }
     }
 
     @Override
     public void shutdown() {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in ClobToJSON. Available CPU: {}", instanceId, processors);
+            LOGGER.debug("Instance: {} successfully shutdown disruptor (replication pipeline) in LobToJSON. Available CPU: {}", instanceId, processors);
         }
     }
 
