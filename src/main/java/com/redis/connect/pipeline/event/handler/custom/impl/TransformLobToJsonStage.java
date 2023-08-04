@@ -46,28 +46,18 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
                         LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, columnName: {}, value: {}", instanceId, columnName, values);
                     }
 
-                    if (isValidJSON((String) values.get(columnName))) {
-                        JsonNode jsonNode = mapper.readTree((String) values.get(columnName));
-                        jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
-                        values.remove(columnName);
+                    JsonNode jsonNode;
+                    try {
+                        jsonNode = mapper.readTree(String.valueOf(values.get(columnName)));
+                    } catch (JacksonException e) {
+                        jsonNode = mapper.readTree(new String(Base64.getDecoder().decode((String) values.get(columnName))));
                     }
-                    else {
-                        JsonNode jsonNode = mapper.readTree(new String(Base64.getDecoder().decode((String) values.get(columnName))));
-                        jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
-                        values.remove(columnName);
-                    }
+
+                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
+                    values.remove(columnName);
                 }
             }
         }
-    }
-
-    public boolean isValidJSON(String json) {
-        try {
-            mapper.readTree(json);
-        } catch (JacksonException e) {
-            return false;
-        }
-        return true;
     }
 
     @Override
