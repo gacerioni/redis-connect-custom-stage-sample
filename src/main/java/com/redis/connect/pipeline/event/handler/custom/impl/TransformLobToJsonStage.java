@@ -25,7 +25,7 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
 
     public TransformLobToJsonStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         super(jobId, jobType, jobPipelineStage);
-        this.jsonLobColumnNames = System.getenv("REDIS_CONNECT_LOB_COLUMNS");
+        this.jsonLobColumnNames = System.getenv("REDISCONNECT_LOB_COLUMNS");
     }
 
     @Override
