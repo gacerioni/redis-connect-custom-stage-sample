@@ -9,6 +9,7 @@ import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
 import java.lang.management.ManagementFactory;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,11 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
                         jsonNode = mapper.readTree(new String(Base64.getDecoder().decode((String) values.get(columnName))));
                     }
 
-                    jsonNode.fieldNames().forEachRemaining(key -> values.put(key, jsonNode.get(key)));
+                    Iterator<String> iterator = jsonNode.fieldNames();
+                    while (iterator.hasNext()) {
+                        String fieldName = jsonNode.fieldNames().next();
+                        values.put(fieldName, jsonNode.get(fieldName));
+                    }
                     values.remove(columnName);
                 }
             }
