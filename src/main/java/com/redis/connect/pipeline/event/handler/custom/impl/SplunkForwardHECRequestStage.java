@@ -1,4 +1,4 @@
-package com.redis.connect.customstage.impl;
+package com.redis.connect.pipeline.event.handler.custom.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lmax.disruptor.Sequence;
@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.Map;
 
 
-public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
+public class SplunkForwardHECRequestStage extends BaseCustomStageHandler {
 
     private static final String CUSTOM_CONFIG_DESTINATION_URL = "splunk.destination.url";
     private static final String HTTP_HEADERS_KEY = "httpHeaders";
@@ -25,7 +25,7 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
 
     private final String destinationUrl;
 
-    public SplunkForwardHECRequestCustomStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
+    public SplunkForwardHECRequestStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         super(jobId, jobType, jobPipelineStage);
         destinationUrl = jobPipelineStage.getDatabase().getCustomConfiguration().get(CUSTOM_CONFIG_DESTINATION_URL);
     }
@@ -33,9 +33,8 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
-        if (!changeEvent.getValues().isEmpty()) {
-
-            Map<String, Object> values = changeEvent.getValues();
+        Map<String, Object> values = changeEvent.getValues();
+        if (values != null) {
 
             if (!values.containsKey(HTTP_HEADERS_KEY))
                 throw new ValidationException("Could not forward Splunk HTTP Event Collector (HEC) request because HTTP Headers were not provided");
@@ -46,7 +45,10 @@ public class SplunkForwardHECRequestCustomStage extends BaseCustomStageHandler {
             // Forward HTTP Event Collector Request
             ResponseEntity<String> response = new RestTemplate().postForEntity(URI.create(destinationUrl), entity, String.class);
 
-            if (!response.getStatusCode().equals(HttpStatus.OK))
+            if (response == null)
+                throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " did not receive a response");
+
+            else if (!response.getStatusCode().equals(HttpStatus.OK))
                 throw new RedisConnectionException("HTTP request to " + destinationUrl + " with HttpHeaders: " + httpHeaders + " received a response with HttpStatusCode: " + response.getStatusCode());
         }
     }

@@ -1,1 +1,1 @@
-com.redis.connect.customstage.CustomChangeEventHandlerFactory
+com.redis.connect.pipeline.event.handler.CustomChangeEventHandlerFactory
