@@ -54,6 +54,9 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
             }
         }
 
+        // Called here instead of the BO layer since we need to instantiate the handler in order to have visibility to the validate method
+        changeEventHandler.validateEventHandler();
+
         return changeEventHandler;
     }
 
