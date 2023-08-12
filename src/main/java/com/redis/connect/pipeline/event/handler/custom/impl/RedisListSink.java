@@ -7,9 +7,33 @@ import com.redis.connect.exception.ValidationException;
 import com.redis.connect.pipeline.event.handler.impl.BaseEventHandler;
 import com.redis.connect.pipeline.event.strategy.domain.impl.DomainStrategy.DomainStrategyBuilder;
 import com.redis.connect.pipeline.event.strategy.domain.impl.DomainStrategy.STRATEGY;
-
 import java.util.Map;
 
+/*
+Sample job configuration with custom sink usage:
+...
+  "pipeline": {
+    "stages": [
+      {
+        "database": {
+          "credentialsDirectoryPath" : "../config/samples/credentials",
+          "databaseURL": "redis://127.0.0.1:14000",
+          "databaseType": "REDIS",
+          "customConfiguration": {
+            "redis.connection.sslEnabled": false,
+            "truststore.file.path": "../config/samples/credentials/client-truststore.jks"
+          }
+        },
+        "index": 1,
+        "stageName": "REDIS_LIST_CUSTOM_SINK",
+        "userDefinedType": "CUSTOM",
+        "checkpointStageIndicator": true,
+        "metricsEnabled" : true
+      }
+    ]
+  },
+...
+*/
 
 public class RedisListSink extends BaseEventHandler {
 
