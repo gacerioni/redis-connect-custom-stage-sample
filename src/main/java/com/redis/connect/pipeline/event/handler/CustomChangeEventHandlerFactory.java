@@ -20,7 +20,7 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
     private static final String TYPE_REDIS_LIST_CUSTOM_SINK = "REDIS_LIST_CUSTOM_SINK";
     private static final String TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE = "TRANSFORM_LOB_TO_JSON";
     private static final String TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE = "TO_UPPER_CASE";
-    private static final String TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE = "TransformValueToDelimitedStringStage";
+    private static final String TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE = "VALUE_TO_DELIMITED_STRING";
 
     private static final Set<String> supportedChangeEventHandlers = new HashSet<>();
 
