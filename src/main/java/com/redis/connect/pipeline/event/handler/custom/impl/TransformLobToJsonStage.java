@@ -9,7 +9,6 @@ import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.pipeline.event.handler.impl.BaseCustomStageHandler;
 import java.lang.management.ManagementFactory;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,18 +46,17 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
                         LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, columnName: {}, value: {}", instanceId, columnName, values);
                     }
 
-                    JsonNode jsonNode;
+                    final var ref = new Object() {
+                        JsonNode jsonNode;
+                    };
+
                     try {
-                        jsonNode = mapper.readTree(String.valueOf(values.get(columnName)));
+                        ref.jsonNode = mapper.readTree(String.valueOf(values.get(columnName)));
                     } catch (JacksonException e) {
-                        jsonNode = mapper.readTree(new String(Base64.getDecoder().decode((String) values.get(columnName))));
+                        ref.jsonNode = mapper.readTree(new String(Base64.getDecoder().decode((String) values.get(columnName))));
                     }
 
-                    Iterator<String> iterator = jsonNode.fieldNames();
-                    while (iterator.hasNext()) {
-                        String fieldName = jsonNode.fieldNames().next();
-                        values.put(fieldName, jsonNode.get(fieldName));
-                    }
+                    ref.jsonNode.fieldNames().forEachRemaining(key -> values.put(key, ref.jsonNode.get(key)));
                     values.remove(columnName);
                 }
             }
