@@ -9,14 +9,14 @@ Custom Stages in Redis Connect is used when there is a need for custom coding fo
 
 ### Step - 1
 
-Create a Custom Stage class e.g. [ToUpperCase](src/main/java/com/redis/connect/customstage/impl/ToUpperCase.java) which extends the BaseCustomStageHandler class.
+Create a Custom Stage class e.g. [TransformValueToUpperCaseStage](src/main/java/com/redis/connect/pipeline/event/handler/custom/impl/TransformValueToUpperCaseStage.java) which extends the BaseCustomStageHandler class.
 
 We must override the following method in order to write the custom stage.
 * ```onEvent(ChangeEventDTO changeEvent)```
 
 ### Step - 2
 
-Create a [CustomChangeEventHandlerFactory](src/main/java/com/redis/connect/customstage/CustomChangeEventHandlerFactory.java) class which implements the ChangeEventHandlerFactory interface and copy this custom factory class to [META-INF/services](src/main/resources/META-INF/services/com.redis.connect.pipeline.event.handler.ChangeEventHandlerFactory) folder that matches the package name in ChangeEventHandlerFactory service configuration.
+Create a [CustomChangeEventHandlerFactory](src/main/java/com/redis/connect/pipeline/event/handler/CustomChangeEventHandlerFactory.java) class which implements the ChangeEventHandlerFactory interface and copy this custom factory class to [META-INF/services](src/main/resources/META-INF/services/com.redis.connect.pipeline.event.handler.ChangeEventHandlerFactory) folder that matches the package name in ChangeEventHandlerFactory service configuration.
 <br>The Service Loader will pick up this custom factory class during runtime by ChangeEventHandlerFactory.
 
 We must instantiate the CustomStage class within the getInstance() method e.g.
@@ -38,7 +38,7 @@ Create the custom stage configuration in the job payload e.g. [cdc-custom-job.js
 }
 ```
 
-<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/ToUpperCase.java#L65) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/customstage/impl/ToUpperCase.java#L66) in Redis has been transformed to UPPER CASE values.
+<br>After Redis Connect job (`loader` or `cdc`) execution, you should see that the value of [col1](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/pipeline/event/handler/custom/impl/TransformValueToUpperCaseStage.java#L62) and [col2](https://github.com/redis-field-engineering/redis-connect-custom-stage-demo/blob/main/src/main/java/com/redis/connect/pipeline/event/handler/custom/impl/TransformValueToUpperCaseStage.java#L63) in Redis has been transformed to UPPER CASE values.
 
 ## Troubleshooting using [Java Debug Wire Protocol (JDWP)](https://docs.oracle.com/javase/8/docs/technotes/guides/troubleshoot/introclientissues005.html)
 
