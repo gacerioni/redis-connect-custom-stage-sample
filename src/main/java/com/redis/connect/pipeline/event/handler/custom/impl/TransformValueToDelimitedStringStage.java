@@ -15,7 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/*
+/**
+Sample table creation and job configuration / payload.
  create table C##RCUSER.TEST(
   ID	            number(8)	not null primary key,
   PIECE1	        varchar2(30),
@@ -23,11 +24,64 @@ import org.slf4j.LoggerFactory;
   PIECE3	        varchar2(30),
   MODIFIED_DATE		TIMESTAMP(6) WITH TIME ZONE
   );
-
 ALTER TABLE C##RCUSER.TEST ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
 
-Use { "targetColumn": "MODIFIED_DATE", "sourceColumn": "MODIFIED_DATE", "type": "CUSTOM" } mapping for MODIFIED_DATE in the Job configuration
- */
+oracle-job.json:
+{
+  "partitions" : 1,
+  "pipeline" : {
+    "stages" : [
+      {
+        "index" : 1,
+        "stageName" : "VALUE_TO_DELIMITED_STRING",
+        "userDefinedType" : "CUSTOM"
+      },
+      {
+        "database" : {
+          "credentialsDirectoryPath" : "../config/samples/credentials",
+          "databaseURL" : "redis://127.0.0.1:14000",
+          "databaseType" : "REDIS",
+          "customConfiguration" : {
+            "redis.connection.sslEnabled" : false,
+            "truststore.file.path" : "../config/samples/credentials/client-truststore.jks"
+          }
+        },
+        "index" : 2,
+        "stageName" : "REDIS_STRING_SINK",
+        "checkpointStageIndicator" : true,
+        "metricsEnabled" : true
+      }
+    ]
+  },
+  "source": {
+    "slowConsumerMaxRetryAttempts" : -1,
+    "sourceTransactionTimeSequenceEnabled" : true,
+     "database" : {
+       "credentialsDirectoryPath" : "../config/samples/credentials",
+       "databaseURL" : "jdbc:oracle:thin:@172.17.0.1:1521/ORCLPDB1",
+       "databaseType" : "ORACLE",
+       "customConfiguration" : {
+       "database.dbname" : "ORCLCDB",
+       "database.hostname" : "172.17.0.1",
+       "database.port" : 1521,
+       "database.pdb.name" : "ORCLPDB1"
+     }
+    },
+    "tables": {
+      "C##RCUSER.TEST" : {
+        "columns" : [
+          { "targetColumn" : "ID", "sourceColumn" : "ID", "targetKey" : true},
+          { "targetColumn" : "MODIFIED_DATE", "sourceColumn" : "MODIFIED_DATE", "type" : "CUSTOM"}
+        ],
+        "initialLoad" : {
+          "partitions" : 4
+        },
+        "autoConfigColumnsEnabled": true
+      }
+    }
+  }
+}
+*/
 public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler {
 
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
@@ -69,6 +123,10 @@ public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler
                     Object dateObj = keyValueAsMap.get("MODIFIED_DATE");
                     if (dateObj instanceof TIMESTAMPTZ) { // load/snapshot will return oracle.sql.TIMESTAMPTZ
                         final TIMESTAMPTZ ts = (TIMESTAMPTZ) dateObj;
+                        /*
+                        See Patterns for Formatting and Parsing,
+                        https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#:~:text=Patterns%20for%20Formatting%20and%20Parsing
+                         */
                         dateObj = ts.toZonedDateTime().format(DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss.SSSSSS a x:00"));
                         valueAsList.add(dateObj);
                     } else { // stream job returns date with time zone
