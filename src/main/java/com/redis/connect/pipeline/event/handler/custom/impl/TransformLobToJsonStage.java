@@ -31,7 +31,7 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
         if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, Raw value: {}", instanceId, changeEvent.getValues());
 
         Map<String, Object> values = changeEvent.getValues();
         if (values != null && !values.isEmpty()) {
