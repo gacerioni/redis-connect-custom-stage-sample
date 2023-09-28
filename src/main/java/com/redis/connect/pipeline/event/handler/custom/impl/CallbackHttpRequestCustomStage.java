@@ -30,6 +30,11 @@ public class CallbackHttpRequestCustomStage extends BaseCustomStageHandler {
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) {
 
         Map<String, Object> values = changeEvent.getValues();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, destinationUrl: {}, Raw values: {}", instanceId, destinationUrl, values);
+        }
+
         if (values != null && values.containsKey("clientId")) {
 
             String clientId = String.valueOf(values.remove("clientId"));

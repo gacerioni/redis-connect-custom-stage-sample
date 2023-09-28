@@ -30,10 +30,11 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
 
-        if (LOGGER.isDebugEnabled())
-            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, Raw value: {}", instanceId, changeEvent.getValues());
-
         Map<String, Object> values = changeEvent.getValues();
+
+        if (LOGGER.isDebugEnabled())
+            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, Raw values: {}", instanceId, values);
+
         if (values != null && !values.isEmpty()) {
 
             String[] jsonLobColumnNameList = jsonLobColumnNames.split(",", -1);
@@ -43,7 +44,7 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
 
                     if (LOGGER.isDebugEnabled()) {
                         System.getenv().forEach((k, v) -> LOGGER.debug(k + ":" + v));
-                        LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, columnName: {}, value: {}", instanceId, columnName, values);
+                        LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM, columnName: {}, values: {}", instanceId, columnName, values);
                     }
 
                     final var ref = new Object() {
