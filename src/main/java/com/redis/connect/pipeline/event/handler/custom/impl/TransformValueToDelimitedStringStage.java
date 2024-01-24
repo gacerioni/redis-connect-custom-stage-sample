@@ -15,6 +15,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.redis.connect.constants.DomainConstants.CHANGE_EVENT_DTO_OPERATION_DELETE;
+
 /**
 Sample table creation and job configuration / payload.
  create table C##RCUSER.TEST(
@@ -95,15 +97,33 @@ public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler
         this.environment = System.getenv("REDISCONNECT_TEST_ENVIRONMENT");
     }
 
+    public static String concatenatePieces(Map<String, Object> map, int quantity) {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 1; i <= quantity; i++) {
+            String key = "PIECE" + i;
+            String value = (String) map.get(key);
+
+            if (value != null) {
+                result.append(value);
+            }
+        }
+
+        result.append(System.lineSeparator()); // Append a newline character
+        return result.toString();
+    }
+    
     @Override
     public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Instance: {} -------------------------------------------Stage: CUSTOM", instanceId);
+            LOGGER.debug("Instance: {}, Raw Change Event: {} -------------------------------------------Stage: CUSTOM", instanceId, changeEvent.getValues());
         }
 
         List<Object> valueAsList = new ArrayList<>();
 
-        if (changeEvent.getValues() != null && !changeEvent.getValues().isEmpty()) {
+        //if (changeEvent.getValues() != null && !changeEvent.getValues().isEmpty()) {
+
+        if (changeEvent.getValues() != null) {
 
             Map<String, Object> keyValueAsMap = changeEvent.getValues();
             String schemaAndTableName = changeEvent.getSchemaAndTableName();
@@ -115,14 +135,21 @@ public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler
 
             if ("DEV".equals(environment)) {
                 if (schemaAndTableName.equals("C##RCUSER.TEST")) { // We are only interested in the values and not keys as App expects it
+                    if (operationType.equals(CHANGE_EVENT_DTO_OPERATION_DELETE))
+                    {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Instance: {} Ignoring change event for schemaAndTableName: {}, operationType: {}, values: {}", instanceId, schemaAndTableName, operationType, keyValueAsMap);
+                        }
+                        changeEvent.setValid(false);
+                        return;
+                    }
                     valueAsList.add(keyValueAsMap.get("ID")); // Adding values to List in the same order as App expects it
                     valueAsList.add(keyValueAsMap.get("PIECE1"));
                     valueAsList.add(keyValueAsMap.get("PIECE2"));
                     valueAsList.add(keyValueAsMap.get("PIECE3"));
 
                     Object dateObj = keyValueAsMap.get("MODIFIED_DATE");
-                    if (dateObj instanceof TIMESTAMPTZ) { // load/snapshot will return oracle.sql.TIMESTAMPTZ
-                        final TIMESTAMPTZ ts = (TIMESTAMPTZ) dateObj;
+                    if (dateObj instanceof TIMESTAMPTZ ts) { // load/snapshot will return oracle.sql.TIMESTAMPTZ
                         /*
                         See Patterns for Formatting and Parsing,
                         https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#:~:text=Patterns%20for%20Formatting%20and%20Parsing
@@ -138,6 +165,11 @@ public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler
 
                     // Final values for this table
                     changeEvent.setValueBlob(String.join("|", StringUtils.join(valueAsList).split(",\\s")).replaceAll("^\\[", "").replaceAll("]$", ""));
+                } else if (schemaAndTableName.equals("C##RCUSER.BIGTABLE")) {
+                    LOGGER.debug("+++ keyValueAsMap={}", String.join(", ", keyValueAsMap.keySet()));
+                    LOGGER.debug("+++ Concat={}", concatenatePieces(keyValueAsMap, 60));
+                    changeEvent.setValueBlob(concatenatePieces(keyValueAsMap, 60));
+                    LOGGER.debug("+++ changeEvent.getValueBlob()= {}", changeEvent.getValueBlob());
                 }
             }
         }

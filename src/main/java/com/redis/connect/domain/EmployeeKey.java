@@ -1,8 +1,10 @@
 package com.redis.connect.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class EmployeeKey implements Serializable {
+    @Serial
     private static final long serialVersionUID = 160372860L;
     private String name;
     private int empNumber;
@@ -41,11 +43,8 @@ public class EmployeeKey implements Serializable {
         if (empNumber != other.empNumber)
             return false;
         if (name == null) {
-            if (other.name != null)
-                return false;
-        } else if (!name.equals(other.name))
-            return false;
-        return true;
+            return other.name == null;
+        } else return name.equals(other.name);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class TransformValueToUpperCaseStage extends BaseCustomStageHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
 
     private HttpURLConnection urlConnection;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final int processors = Runtime.getRuntime().availableProcessors();
 
     public TransformValueToUpperCaseStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {

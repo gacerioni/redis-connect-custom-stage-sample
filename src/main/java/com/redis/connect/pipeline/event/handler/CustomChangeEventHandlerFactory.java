@@ -40,25 +40,19 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
         ChangeEventHandler changeEventHandler;
 
         switch (jobPipelineStage.getStageName()) {
-            case TYPE_FORWARD_HEC_REQUEST_CUSTOM_STAGE:
-                changeEventHandler = new SplunkForwardHECRequestStage(jobId, jobType, jobPipelineStage);
-                break;
-            case TYPE_REDIS_LIST_CUSTOM_SINK:
-                changeEventHandler = new RedisListSink(jobId, jobType, jobPipelineStage);
-                break;
-            case TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE:
-                changeEventHandler = new TransformLobToJsonStage(jobId, jobType, jobPipelineStage);
-                break;
-            case TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE:
-                changeEventHandler = new TransformValueToUpperCaseStage(jobId, jobType, jobPipelineStage);
-                break;
-            case TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE:
-                changeEventHandler = new TransformValueToDelimitedStringStage(jobId, jobType, jobPipelineStage);
-                break;
-            case TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE:
-                changeEventHandler = new CallbackHttpRequestCustomStage(jobId, jobType, jobPipelineStage);
-                break;
-            default: {
+            case TYPE_FORWARD_HEC_REQUEST_CUSTOM_STAGE ->
+                    changeEventHandler = new SplunkForwardHECRequestStage(jobId, jobType, jobPipelineStage);
+            case TYPE_REDIS_LIST_CUSTOM_SINK ->
+                    changeEventHandler = new RedisListSink(jobId, jobType, jobPipelineStage);
+            case TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE ->
+                    changeEventHandler = new TransformLobToJsonStage(jobId, jobType, jobPipelineStage);
+            case TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE ->
+                    changeEventHandler = new TransformValueToUpperCaseStage(jobId, jobType, jobPipelineStage);
+            case TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE ->
+                    changeEventHandler = new TransformValueToDelimitedStringStage(jobId, jobType, jobPipelineStage);
+            case TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE ->
+                    changeEventHandler = new CallbackHttpRequestCustomStage(jobId, jobType, jobPipelineStage);
+            default -> {
                 throw new ValidationException("Instance: " + instanceId + " failed to load change event handler for " +
                         " JobId: " + jobId + " due to an invalid job pipeline Stage: " + jobPipelineStage.getStageName());
             }

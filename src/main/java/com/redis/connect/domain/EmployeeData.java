@@ -1,8 +1,10 @@
 package com.redis.connect.domain;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 public class EmployeeData implements Serializable {
+    @Serial
     private static final long serialVersionUID = 2095541179L;
     private EmployeeKey nameAndNumber;
     private int salary;
