@@ -1,11 +1,6 @@
 package com.redis.connect.pipeline.event.handler;
 
-import com.redis.connect.pipeline.event.handler.custom.impl.CallbackHttpRequestCustomStage;
-import com.redis.connect.pipeline.event.handler.custom.impl.RedisListSink;
-import com.redis.connect.pipeline.event.handler.custom.impl.SplunkForwardHECRequestStage;
-import com.redis.connect.pipeline.event.handler.custom.impl.TransformValueToUpperCaseStage;
-import com.redis.connect.pipeline.event.handler.custom.impl.TransformValueToDelimitedStringStage;
-import com.redis.connect.pipeline.event.handler.custom.impl.TransformLobToJsonStage;
+import com.redis.connect.pipeline.event.handler.custom.impl.*;
 import com.redis.connect.dto.JobPipelineStageDTO;
 import com.redis.connect.exception.ValidationException;
 import java.lang.management.ManagementFactory;
@@ -17,21 +12,21 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
     private final String instanceId = ManagementFactory.getRuntimeMXBean().getName();
 
     private static final String TYPE_FORWARD_HEC_REQUEST_CUSTOM_STAGE = "FORWARD_HEC_REQUEST";
-    private static final String TYPE_REDIS_LIST_CUSTOM_SINK = "REDIS_LIST_CUSTOM_SINK";
     private static final String TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE = "TRANSFORM_LOB_TO_JSON";
     private static final String TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE = "TO_UPPER_CASE";
     private static final String TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE = "VALUE_TO_DELIMITED_STRING";
     private static final String TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE = "CALLBACK_HTTP_REQUEST";
+    private static final String TYPE_GEMFIRE_HASH_PREP_STAGE = "GEMFIRE_HASH_PREP_STAGE";
 
     private static final Set<String> supportedChangeEventHandlers = new HashSet<>();
 
     static {
         supportedChangeEventHandlers.add(TYPE_FORWARD_HEC_REQUEST_CUSTOM_STAGE);
-        supportedChangeEventHandlers.add(TYPE_REDIS_LIST_CUSTOM_SINK);
         supportedChangeEventHandlers.add(TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE);
         supportedChangeEventHandlers.add(TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE);
         supportedChangeEventHandlers.add(TYPE_TRANSFORM_VALUE_TO_DELIMITED_STRING_STAGE);
         supportedChangeEventHandlers.add(TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE);
+        supportedChangeEventHandlers.add(TYPE_GEMFIRE_HASH_PREP_STAGE);
     }
 
     @Override
@@ -42,8 +37,6 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
         switch (jobPipelineStage.getStageName()) {
             case TYPE_FORWARD_HEC_REQUEST_CUSTOM_STAGE ->
                     changeEventHandler = new SplunkForwardHECRequestStage(jobId, jobType, jobPipelineStage);
-            case TYPE_REDIS_LIST_CUSTOM_SINK ->
-                    changeEventHandler = new RedisListSink(jobId, jobType, jobPipelineStage);
             case TYPE_TRANSFORM_LOB_TO_JSON_CUSTOM_STAGE ->
                     changeEventHandler = new TransformLobToJsonStage(jobId, jobType, jobPipelineStage);
             case TYPE_TRANSFORM_VALUE_TO_UPPER_CASE_STAGE ->
@@ -52,6 +45,8 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
                     changeEventHandler = new TransformValueToDelimitedStringStage(jobId, jobType, jobPipelineStage);
             case TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE ->
                     changeEventHandler = new CallbackHttpRequestCustomStage(jobId, jobType, jobPipelineStage);
+            case TYPE_GEMFIRE_HASH_PREP_STAGE ->
+                    changeEventHandler = new GemfireHashSinkPreparationStage(jobId, jobType, jobPipelineStage);
             default -> {
                 throw new ValidationException("Instance: " + instanceId + " failed to load change event handler for " +
                         " JobId: " + jobId + " due to an invalid job pipeline Stage: " + jobPipelineStage.getStageName());

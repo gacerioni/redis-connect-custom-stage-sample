@@ -114,7 +114,7 @@ public class TransformValueToDelimitedStringStage extends BaseCustomStageHandler
     }
     
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Instance: {}, Raw Change Event: {} -------------------------------------------Stage: CUSTOM", instanceId, changeEvent.getValues());
         }

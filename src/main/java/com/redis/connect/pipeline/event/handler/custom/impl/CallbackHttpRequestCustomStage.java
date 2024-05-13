@@ -27,7 +27,7 @@ public class CallbackHttpRequestCustomStage extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) {
+    public void onEvent(ChangeEventDTO changeEvent) {
 
         Map<String, Object> values = changeEvent.getValues();
 
