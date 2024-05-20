@@ -28,7 +28,7 @@ public class TransformLobToJsonStage extends BaseCustomStageHandler {
     }
 
     @Override
-    public void onEvent(ChangeEventDTO<Map<String, Object>> changeEvent) throws Exception {
+    public void onEvent(ChangeEventDTO changeEvent) throws Exception {
 
         Map<String, Object> values = changeEvent.getValues();
 
