@@ -18,6 +18,7 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
     private static final String TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE = "CALLBACK_HTTP_REQUEST";
     private static final String TYPE_GEMFIRE_HASH_PREP_STAGE = "GEMFIRE_HASH_PREP_STAGE";
     private static final String TYPE_GEMFIRE_OBJECT_TO_MAP_STAGE = "OBJECT_TO_MAP_STAGE";
+    private static final String TYPE_GABS_CHANGE_EVENT_OPERATION_STAGE = "GABS_CHANGE_EVENT_OPERATION_STAGE"; // This is my uber like use case
 
     private static final Set<String> supportedChangeEventHandlers = new HashSet<>();
 
@@ -29,6 +30,7 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
         supportedChangeEventHandlers.add(TYPE_CALLBACK_HTTP_REQUEST_CUSTOM_STAGE);
         supportedChangeEventHandlers.add(TYPE_GEMFIRE_HASH_PREP_STAGE);
         supportedChangeEventHandlers.add(TYPE_GEMFIRE_OBJECT_TO_MAP_STAGE);
+        supportedChangeEventHandlers.add(TYPE_GABS_CHANGE_EVENT_OPERATION_STAGE); // This is my uber like use case
     }
 
     @Override
@@ -51,6 +53,8 @@ public class CustomChangeEventHandlerFactory implements ChangeEventHandlerFactor
                     changeEventHandler = new GemfireHashSinkPreparationStage(jobId, jobType, jobPipelineStage);
             case TYPE_GEMFIRE_OBJECT_TO_MAP_STAGE ->
                     changeEventHandler = new GemfireObjectToMapPrepStage(jobId, jobType, jobPipelineStage);
+            case TYPE_GABS_CHANGE_EVENT_OPERATION_STAGE ->  // This is my uber like use case
+                    changeEventHandler = new GabsChangeEventOperationStage(jobId, jobType, jobPipelineStage);
             default -> {
                 throw new ValidationException("Instance: " + instanceId + " failed to load change event handler for " +
                         " JobId: " + jobId + " due to an invalid job pipeline Stage: " + jobPipelineStage.getStageName());

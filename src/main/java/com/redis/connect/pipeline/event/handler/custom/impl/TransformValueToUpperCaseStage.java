@@ -55,80 +55,21 @@ public class TransformValueToUpperCaseStage extends BaseCustomStageHandler {
             if (LOGGER.isDebugEnabled())
                 LOGGER.debug("Instance: {} CustomStage::onEvent Processor, schemaAndTableName: {}, operationType: {}", instanceId, schemaAndTableName, operationType);
 
-            String col1Key = System.getenv("col1");
-            String col2Key = System.getenv("col2");
-            String col3Key = System.getenv("col3");
+            // Extract the "NAME" column value (specific to CHINOOK TRACK table)
+            String trackName = (String) values.get("NAME");
 
-            String col1Value = (String) values.getOrDefault(System.getenv("col1"), "fname");
-            String col2Value = (String) values.getOrDefault(System.getenv("col2"), "lname");
-            String col3Value = (String) values.getOrDefault(System.getenv("col3"), "hiredate");
-
-            // Update value(s) for col1Value coming from the source to upper case
-            if (col1Value != null) {
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Original " + col1Key + ": " + col1Value);
-
-                values.put(System.getenv("col1"), col1Value.toUpperCase());
-
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Updated " + col1Key + ": " + values.get(System.getenv("col1")));
-            }
-
-            // Update value(s) for col2Value coming from the source to upper case
-            if (col2Value != null) {
-
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Original " + col2Key + ": " + col2Value);
-
-                values.put(System.getenv("col2"), col2Value.toUpperCase());
-
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Updated " + col2Key + ": " + values.get(System.getenv("col2")));
-            }
-
-            // Add col3Value from service call if it's null at the source
-            if (col3Value.isBlank() && col3Value.isEmpty()) {
-
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Original " + col3Key + ": " + col3Value);
-
-                // Create a value object to hold the URL
-                URL url = new URL("http://worldtimeapi.org/api/ip");
-
-                // Open a connection(?) on the URL(?) and cast the response(??)
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                // Now it's "open", we can set the request method, headers etc.
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setRequestProperty("Accept", "application/json");
-
-                Reader streamReader;
-
-                if (urlConnection.getResponseCode() != 200)
-                    streamReader = new InputStreamReader(urlConnection.getErrorStream());
-                else
-                    streamReader = new InputStreamReader(urlConnection.getInputStream());
-
-                BufferedReader br = new BufferedReader(streamReader);
-                String output; String unixtime = "";
-
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Output from http://worldtimeapi.org/api/ip API call .... \n");
-
-                // Manually converting the response body InputStream to Map using Jackson
-                while ((output = br.readLine()) != null) {
-                    Map value = objectMapper.readValue(output, Map.class);
-
-                    if (!value.isEmpty() && value.containsKey("unixtime"))
-                        unixtime = Integer.toString((Integer) value.get("unixtime"));
+            // If the "NAME" column exists, convert it to uppercase
+            if (trackName != null) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Original NAME: {}", trackName);
                 }
 
-                values.put(System.getenv("col3"), unixtime);
+                // Convert the "NAME" value to uppercase
+                values.put("NAME", trackName.toUpperCase());
 
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Updated " + col3Key + ": " + values.get(System.getenv("col3")));
-
-                br.close();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated NAME: {}", values.get("NAME"));
+                }
             }
         }
     }
