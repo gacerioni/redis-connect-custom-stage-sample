@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.redis.connect.constants.DomainConstants.*;
@@ -18,8 +19,12 @@ public class GabsChangeEventOperationStage extends BaseCustomStageHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger("redis-connect");
     private final int processors = Runtime.getRuntime().availableProcessors();
 
+    // this is just for the demo. I will put this in the final JSON.
+    private String jobId;
+
     public GabsChangeEventOperationStage(String jobId, String jobType, JobPipelineStageDTO jobPipelineStage) {
         super(jobId, jobType, jobPipelineStage);
+        this.jobId = jobId;
     }
 
     @Override
@@ -87,6 +92,27 @@ public class GabsChangeEventOperationStage extends BaseCustomStageHandler {
             if (LOGGER.isWarnEnabled()) {
                 LOGGER.warn("Instance: {} - GENREID is missing from the change event values.", instanceId);
             }
+        }
+
+        // EXTRA PIECE JUST FOR FUN
+        // Add the nested metadata object
+        if (values != null) {
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("connect_app_version", "1.0.0");
+            metadata.put("owner", "Gabs");
+            metadata.put("job_id", jobId);
+            metadata.put("custom_stage_name", "GabsChangeEventOperationStage");
+            metadata.put("timestamp", System.currentTimeMillis());
+            metadata.put("instance_id", instanceId);
+            metadata.put("java_version", System.getProperty("java.version"));
+            metadata.put("os_name", System.getProperty("os.name"));
+            metadata.put("os_version", System.getProperty("os.version"));
+            metadata.put("thread_id", Thread.currentThread().getId());
+            metadata.put("message", "Processed by Redis Connect and Gabs!");
+
+            // Add any other metadata you want
+
+            values.put("gabs_connect_metadata", metadata);
         }
     }
 
