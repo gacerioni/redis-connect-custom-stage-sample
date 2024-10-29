@@ -21,7 +21,7 @@ ORACLE_HOST = os.getenv('ORACLE_HOST', '34.170.196.119')
 ORACLE_PORT = os.getenv('ORACLE_PORT', '1521')
 ORACLE_SERVICE_NAME = os.getenv('ORACLE_SERVICE_NAME', 'ORCLPDB1')
 ORACLE_USER = os.getenv('ORACLE_USER', 'C##dbzuser')
-ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'dbz')
+ORACLE_PASSWORD = os.getenv('ORACLE_PASSWORD', 'blabla')
 
 # Base URL for Redis Connect
 REDIS_CONNECT_BASE_URL = f'http://{REDIS_CONNECT_HOST}:{REDIS_CONNECT_PORT}/connect/api/v1'
