@@ -1,0 +1,71 @@
+{
+    "partitions": 1,
+    "pipeline": {
+      "stages": [
+        {
+          "index": 1,
+          "stageName": "TO_UPPER_CASE",
+          "userDefinedType": "CUSTOM"
+        },
+        {
+          "index": 2,
+          "stageName": "GABS_CHANGE_EVENT_OPERATION_STAGE",
+          "userDefinedType": "CUSTOM"
+        },
+        {
+          "database": {
+            "credentialsDirectoryPath": "/root/redis_connect_gabs/redis-connect/config/samples/credentials",
+            "databaseURL": "redis://redis-14000.redis.platformengineer.io:14000",
+            "databaseType": "REDIS",
+            "customConfiguration": {
+              "redis.connection.sslEnabled": false,
+              "truststore.file.path": "/root/redis_connect_gabs/redis-connect/config/samples/credentials/client-truststore.jks"
+            }
+          },
+          "index": 3,
+          "stageName": "REDIS_JSON_SINK",
+          "checkpointStageIndicator": true,
+          "metricsEnabled": true
+        }
+      ]
+    },
+    "source": {
+      "slowConsumerMaxRetryAttempts": -1,
+      "pollSourceInterval": 5,
+      "database": {
+        "credentialsDirectoryPath": "/root/redis_connect_gabs/redis-connect/config/samples/credentials",
+        "databaseURL": "jdbc:oracle:thin:@10.128.0.2:1521/ORCLPDB1",
+        "databaseType": "ORACLE",
+        "customConfiguration": {
+          "connector.class": "io.debezium.connector.oracle.OracleConnector",
+          "database.dbname": "ORCLCDB",
+          "database.hostname": "10.128.0.2",
+          "database.port": 1521,
+          "database.pdb.name": "ORCLPDB1",
+          "poll.interval.ms": 10
+        }
+      },
+      "tables": {
+        "CHINOOK.ALBUM": {
+          "columns": [
+            { "targetColumn": "AlbumId", "sourceColumn": "AlbumId", "targetKey": true },
+            { "targetColumn": "Title", "sourceColumn": "Title", "type": "STRING" }
+          ],
+          "initialLoad": {
+            "partitions": 1
+          },
+          "autoConfigColumnsEnabled": true
+        },
+        "CHINOOK.TRACK": {
+          "columns": [
+            { "targetColumn": "TRACKID", "sourceColumn": "TRACKID", "targetKey": true },
+            { "targetColumn": "NAME", "sourceColumn": "NAME", "type": "STRING" }
+          ],
+          "initialLoad": {
+            "partitions": 1
+          },
+          "autoConfigColumnsEnabled": true
+        }
+      }
+    }
+  }
